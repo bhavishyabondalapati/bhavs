@@ -62,11 +62,20 @@ locals {
         { actions = ["ssm:GetParameter"], resources = ["arn:aws:ssm:us-east-2:${data.aws_caller_identity.me.account_id}:parameter${local.stream_key_param}"] },
       ]
     }
+    admin_analytics = {
+      route   = "GET /admin/analytics"
+      handler = "api.admin_analytics.handler"
+      env     = { ANALYTICS_BUCKET = local.p.analytics_bucket }
+      access = [
+        { actions = ["s3:GetObject"], resources = ["${local.p.analytics_bucket_arn}/reports/*"] },
+      ]
+    }
     events = {
       route   = "POST /events"
       handler = "api.events.handler"
-      env     = {}
+      env     = { EVENTS_QUEUE_URL = aws_sqs_queue.events.url }
       access = [
+        { actions = ["sqs:SendMessage"], resources = [aws_sqs_queue.events.arn] },
         { actions = ["dynamodb:UpdateItem"], resources = [local.p.watch_history_table_arn] },
         { actions = ["dynamodb:GetItem"], resources = [local.p.titles_table_arn] },
       ]

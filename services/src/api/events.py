@@ -1,17 +1,22 @@
 """POST /events - player events (play, pause, seek, heartbeat, complete).
 
-Phase 1: keeps watch_history up to date (resume position + completion).
-Phase 3 adds forwarding every event to SQS for analytics.
+1. keeps watch_history up to date (resume position + completion)
+2. forwards a cleaned copy of every event to SQS -> S3 -> Athena (analytics)
 """
 import json
 import math
+import os
+import re
 import time
 from decimal import Decimal
 
+import boto3
 from shared.common import error, response, table, user_id
 
 EVENT_TYPES = {"play", "pause", "seek", "heartbeat", "complete"}
 COMPLETE_AT = 0.95  # watched >= 95% counts as finished
+RENDITION_RE = re.compile(r"^\d{3,4}p$")
+MAX_SKEW_MS = 24 * 3600 * 1000  # distrust client clocks more than a day off
 
 
 def _num(v, lo=0, hi=10**6):
@@ -22,6 +27,32 @@ def _num(v, lo=0, hi=10**6):
     if math.isnan(f) or f < lo or f > hi:
         return None
     return Decimal(str(round(f, 1)))
+
+
+def _analytics_record(uid, body, etype, title_id, position, duration, now_ms):
+    ts = body.get("ts")
+    ts = int(ts) if isinstance(ts, (int, float)) and abs(ts - now_ms) <= MAX_SKEW_MS else now_ms
+    bitrate = _num(body.get("bitrate_kbps"), 0, 100_000)
+    rendition = body.get("rendition")
+    session = str(body.get("session_id") or "")[:64]
+    return {
+        "ts": ts, "received_at": now_ms, "type": etype, "user_id": uid, "title_id": title_id,
+        "session_id": session or None, "position": float(position),
+        "duration": float(duration) if duration else None,
+        "bitrate_kbps": int(bitrate) if bitrate is not None else None,
+        "rendition": rendition if isinstance(rendition, str) and RENDITION_RE.match(rendition) else None,
+        "synthetic": False,
+    }
+
+
+def _forward(record):
+    url = os.environ.get("EVENTS_QUEUE_URL")
+    if not url:
+        return
+    try:
+        boto3.client("sqs").send_message(QueueUrl=url, MessageBody=json.dumps(record))
+    except Exception as exc:  # noqa: BLE001 - analytics must never fail the viewer's request
+        print(f"analytics enqueue failed: {exc!r}")
 
 
 def handler(event, context):
@@ -55,4 +86,5 @@ def handler(event, context):
         ExpressionAttributeNames={"#p": "position", **({"#d": "duration"} if duration else {})},
         ExpressionAttributeValues=vals,
     )
+    _forward(_analytics_record(uid, body, etype, title_id, position, duration, int(time.time() * 1000)))
     return response(202, {"ok": True})

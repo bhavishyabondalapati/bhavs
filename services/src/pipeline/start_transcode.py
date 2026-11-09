@@ -10,7 +10,7 @@ import time
 import boto3
 from shared.common import table
 
-KEY_RE = re.compile(r"^uploads/(?P<id>[\w-]{1,100})/(?P<file>[^/]+\.(mp4|mov|mkv|m4v|webm|avi))$", re.IGNORECASE)
+KEY_RE = re.compile(r"^uploads/(?P<id>[\w-]{1,100})/(?P<file>[^/]+\.(mp4|mov|mkv|m4v|webm|avi|ogv))$", re.IGNORECASE)
 
 
 def handler(event, context):

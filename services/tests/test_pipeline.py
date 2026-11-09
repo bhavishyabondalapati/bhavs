@@ -27,6 +27,15 @@ def test_start_ignores_bad_keys_and_unknown_titles(db, monkeypatch):
     sfn.start_execution.assert_not_called()
 
 
+def test_start_accepts_ogv_and_webm(db, monkeypatch):
+    monkeypatch.setenv("STATE_MACHINE_ARN", "arn:fake")
+    sfn = MagicMock()
+    sfn.start_execution.return_value = {"executionArn": "x"}
+    with patch.object(start_transcode.boto3, "client", return_value=sfn):
+        assert start_transcode.handler(s3_event("uploads/bbb/a.ogv"), None)["started"]
+        assert start_transcode.handler(s3_event("uploads/sintel/a.webm"), None)["started"]
+
+
 def test_start_marks_processing_and_starts_run(db, monkeypatch):
     monkeypatch.setenv("STATE_MACHINE_ARN", "arn:fake")
     sfn = MagicMock()

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import Poster from "@/components/Poster";
 import { apiGet, NotFoundError } from "@/lib/api";
@@ -36,10 +37,11 @@ export default async function TitlePage({ params }: Props) {
         </div>
         {!ready && <p className="notice" role="status">This film is still being prepared for streaming.</p>}
         <p className="desc">{t.description}</p>
-        {/* Phase 3 replaces this with a link to the player. */}
-        <button className="btn" type="button" aria-disabled={!ready} disabled={!ready}>
-          {ready ? "Play" : "Coming soon"}
-        </button>
+        {ready ? (
+          <Link className="btn" href={`/watch/${t.id}`}>Play</Link>
+        ) : (
+          <button className="btn" type="button" aria-disabled="true" disabled>Coming soon</button>
+        )}
         {(t.credit || t.license_name) && (
           <aside className="license" aria-label="License and credit">
             <strong>Credit:</strong> {t.credit}

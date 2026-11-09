@@ -129,3 +129,48 @@ resource "aws_ecr_lifecycle_policy" "transcode" {
     }]
   })
 }
+
+# ---- analytics lake: raw JSONL from the events pipeline, compacted Parquet, Athena results, cached reports ----
+resource "aws_s3_bucket" "analytics" {
+  bucket        = "bhavs-analytics-${local.acct}"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_public_access_block" "analytics" {
+  bucket                  = aws_s3_bucket.analytics.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "analytics" {
+  bucket = aws_s3_bucket.analytics.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "analytics" {
+  bucket = aws_s3_bucket.analytics.id
+  rule {
+    id     = "athena-results-expire"
+    status = "Enabled"
+    filter {
+      prefix = "athena-results/"
+    }
+    expiration {
+      days = 7
+    }
+  }
+  rule {
+    id     = "abort-multipart"
+    status = "Enabled"
+    filter {}
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 3
+    }
+  }
+}

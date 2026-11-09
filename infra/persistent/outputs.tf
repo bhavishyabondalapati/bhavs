@@ -21,3 +21,5 @@ output "ecr_repository_arn" { value = aws_ecr_repository.transcode.arn }
 output "cdn_domain" { value = aws_cloudfront_distribution.cdn.domain_name }
 output "cdn_distribution_id" { value = aws_cloudfront_distribution.cdn.id }
 output "stream_kvs_arn" { value = aws_cloudfront_key_value_store.keys.arn }
+output "analytics_bucket" { value = aws_s3_bucket.analytics.bucket }
+output "analytics_bucket_arn" { value = aws_s3_bucket.analytics.arn }

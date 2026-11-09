@@ -92,15 +92,6 @@ films:
       license_at_source: CC BY 4.0
       size_bytes: 81781205
       verified: 2026-11-09
-  - id: agent-327
-    title: "Agent 327: Operation Barbershop"
-    year: 2017
-    genres: [comedy, action, animation]
-    duration_sec: 232
-    description: A secret agent walks into a barbershop and finds the haircut is the least suspicious thing in it.
-    license_name: CC BY 4.0
-    license_url: https://creativecommons.org/licenses/by/4.0/
-    credit: "(c) Blender Institute | agent327.com"
   - id: caminandes-llama-drama
     title: "Caminandes: Llama Drama"
     year: 2013
@@ -115,4 +106,154 @@ films:
       page: https://commons.wikimedia.org/wiki/File:Caminandes-_Llama_Drama_-_Short_Movie.ogv
       license_at_source: CC BY 3.0
       size_bytes: 31428271
+      verified: 2026-11-09
+  - id: caminandes-gran-dillama
+    title: "Caminandes: Gran Dillama"
+    year: 2013
+    genres: [comedy, animation, family]
+    duration_sec: 146
+    description: The second episode of the Caminandes series, a short slapstick comedy from Blender Institute.
+    license_name: CC BY-SA 3.0
+    license_url: https://creativecommons.org/licenses/by-sa/3.0/
+    credit: "(c) Blender Institute, produced by Pablo Vazquez, Beorn Leonard and Francesco Siddi | caminandes.com"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/7/7c/Caminandes_-_Gran_Dillama_-_Blender_Foundation%27s_new_Open_Movie.webm
+      page: https://commons.wikimedia.org/wiki/File:Caminandes_-_Gran_Dillama_-_Blender_Foundation's_new_Open_Movie.webm
+      license_at_source: CC BY-SA 3.0
+      size_bytes: 43033601
+      verified: 2026-11-09
+  - id: caminandes-llamigos
+    title: "Caminandes: Llamigos"
+    year: 2016
+    genres: [comedy, animation, family]
+    duration_sec: 150
+    description: It is winter in Patagonia and food is scarce, so Koro the llama and Oti the pesky penguin go to war over the last tasty berry.
+    license_name: CC BY 3.0
+    license_url: https://creativecommons.org/licenses/by/3.0/
+    credit: "(c) Blender Foundation | caminandes.com"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/a/ab/Caminandes_3_-_Llamigos_-_Blender_Animated_Short.webm
+      page: https://commons.wikimedia.org/wiki/File:Caminandes_3_-_Llamigos_-_Blender_Animated_Short.webm
+      license_at_source: CC BY 3.0
+      size_bytes: 59968030
+      verified: 2026-11-09
+  - id: glass-half
+    title: "Glass Half"
+    year: 2015
+    genres: [animation, short]
+    duration_sec: 193
+    description: A short animated film from the Blender Foundation.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Foundation | blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/0/02/Glass_Half_-_Blender_Open_Movie-full_movie.webm/Glass_Half_-_Blender_Open_Movie-full_movie.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:Glass_Half_-_Blender_Open_Movie-full_movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 48769004
+      verified: 2026-11-09
+  - id: daily-dweebs
+    title: "The Daily Dweebs"
+    year: 2017
+    genres: [animation, short]
+    duration_sec: 60
+    description: A one-minute animated short from the Blender Foundation.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Foundation | blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b2/The_Daily_Dweebs_-_Blender_Open_Movie-full_movie.webm/The_Daily_Dweebs_-_Blender_Open_Movie-full_movie.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:The_Daily_Dweebs_-_Blender_Open_Movie-full_movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 9429525
+      verified: 2026-11-09
+  - id: coffee-run
+    title: "Coffee Run"
+    year: 2020
+    genres: [animation, short]
+    duration_sec: 185
+    description: A short animated film from the Blender Foundation.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Foundation | blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/3/3f/Coffee_Run_-_Blender_Open_Movie-full_movie.webm
+      page: https://commons.wikimedia.org/wiki/File:Coffee_Run_-_Blender_Open_Movie-full_movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 29260881
+      verified: 2026-11-09
+  - id: sprite-fright
+    title: "Sprite Fright"
+    year: 2021
+    genres: [animation, fantasy]
+    duration_sec: 630
+    description: A ten-minute animated open movie from Blender Studio.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Studio | studio.blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/7/76/Sprite_Fright_-_Blender_Open_Movie-full_movie.webm
+      page: https://commons.wikimedia.org/wiki/File:Sprite_Fright_-_Blender_Open_Movie-full_movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 158621642
+      verified: 2026-11-09
+  - id: wing-it
+    title: "Wing It!"
+    year: 2023
+    genres: [animation, short]
+    duration_sec: 238
+    description: A short animated open movie from Blender Studio.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Studio | studio.blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/3/38/WING_IT%21_-_Blender_Open_Movie-full_movie.webm
+      page: https://commons.wikimedia.org/wiki/File:WING_IT!_-_Blender_Open_Movie-full_movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 36196718
+      verified: 2026-11-09
+  - id: charge
+    title: "Charge"
+    year: 2022
+    genres: [animation, short]
+    duration_sec: 263
+    description: A short animated open movie from Blender Studio.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Studio | studio.blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7a/Charge_-_Blender_Open_Movie-full_movie.webm/Charge_-_Blender_Open_Movie-full_movie.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:Charge_-_Blender_Open_Movie-full_movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 56102296
+      verified: 2026-11-09
+  - id: hero
+    title: "Hero"
+    year: 2018
+    genres: [animation, short]
+    duration_sec: 237
+    description: A short film made to showcase Blender's Grease Pencil 2D animation tools.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Foundation | blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/a/a9/HERO_-_Blender_Open_Movie-full_movie.webm
+      page: https://commons.wikimedia.org/wiki/File:HERO_-_Blender_Open_Movie-full_movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 60475168
+      verified: 2026-11-09
+  - id: singularity
+    title: "Singularity"
+    year: 2026
+    genres: [sci-fi, animation, adventure]
+    duration_sec: 391
+    description: A painterly space adventure from Blender Studio.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Studio | studio.blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f2/SINGULARITY_-_Blender_Open_Movie-full_movie.webm/SINGULARITY_-_Blender_Open_Movie-full_movie.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:SINGULARITY_-_Blender_Open_Movie-full_movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 132610068
       verified: 2026-11-09

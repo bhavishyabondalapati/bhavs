@@ -132,3 +132,27 @@ h1, h2, h3 { line-height: 1.15; letter-spacing: -0.01em; margin: 0; }
 .notice { padding: 12px 14px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); margin-bottom: 18px; }
 .empty { padding: 48px var(--gutter); color: var(--muted); }
 main { outline: none; }
+
+/* player */
+.watch { max-width: 1100px; padding: 24px var(--gutter) 48px; }
+.player video { width: 100%; max-height: 72vh; background: #000; border-radius: var(--radius); display: block; }
+.player-bar { display: flex; align-items: center; gap: 12px; padding: 12px 2px; flex-wrap: wrap; }
+.player-bar select { font: inherit; color: var(--text); background: var(--surface); border: 1px solid #44516a; border-radius: 8px; padding: 6px 10px; }
+.watch-meta { display: grid; gap: 6px; justify-items: start; }
+.watch-meta h1 { font-size: 1.6rem; }
+
+/* admin analytics */
+.admin { padding: 28px var(--gutter) 64px; max-width: 1000px; display: grid; gap: 14px; }
+.admin h1 { font-size: 2rem; }
+.admin h2 { font-size: 1.2rem; margin-top: 18px; }
+.stats { list-style: none; padding: 0; margin: 4px 0; display: flex; gap: 28px; flex-wrap: wrap; }
+.stats li { color: var(--muted); } .stats strong { color: var(--text); font-size: 1.6rem; display: block; }
+table.data { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+table.data th, table.data td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+table.data th { color: var(--muted); font-weight: 600; }
+.bar { display: block; height: 10px; width: 100%; min-width: 80px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); }
+table.heat td, table.heat th { text-align: center; padding: 8px 4px; }
+table.heat td:first-child, table.heat th:first-child { text-align: left; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 640px) { .admin { overflow-x: auto; } }

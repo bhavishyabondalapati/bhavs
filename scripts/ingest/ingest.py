@@ -12,6 +12,8 @@ import sys
 from pathlib import Path
 
 import boto3
+from boto3.s3.transfer import TransferConfig
+from botocore.config import Config
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -53,6 +55,7 @@ def main():
     ap.add_argument("--films", default=str(ROOT / "films.yaml"))
     ap.add_argument("--only", nargs="*", help="film ids to ingest (default: all that have files)")
     ap.add_argument("--upload", action="store_true", help="actually upload (this STARTS the paid transcode pipeline)")
+    ap.add_argument("--force", action="store_true", help="re-ingest films that are already READY or PROCESSING")
     ap.add_argument("--yes", action="store_true", help="skip the confirmation prompt")
     a = ap.parse_args()
 
@@ -78,11 +81,28 @@ def main():
     bucket = f"bhavs-source-{acct}"
     table = session.resource("dynamodb").Table(os.environ.get("TITLES_TABLE", "bhavs-titles"))
     seed_titles.seed(table, [f for f in films if f["id"] in matches])   # metadata first, so the title exists
-    s3 = session.client("s3")
+    # Gentle transfer settings: some networks drop long multi-part uploads, so use few parallel parts,
+    # big chunks and automatic retries (and retry the whole file a few times).
+    s3 = session.client("s3", config=Config(retries={"max_attempts": 10, "mode": "standard"}, read_timeout=120))
+    cfg = TransferConfig(max_concurrency=2, multipart_chunksize=16 * 1024 * 1024, multipart_threshold=16 * 1024 * 1024)
+    failed = []
     for fid, path in matches.items():
+        status = table.get_item(Key={"id": fid}).get("Item", {}).get("status")
+        if status in ("READY", "PROCESSING") and not a.force:
+            print(f"skipping {fid}: already {status} (use --force to redo)")
+            continue
         key = f"uploads/{fid}/{path.name}"
-        print(f"uploading {path.name} -> s3://{bucket}/{key}")
-        s3.upload_file(str(path), bucket, key)
+        for attempt in range(1, 4):
+            try:
+                print(f"uploading {path.name} -> s3://{bucket}/{key} (attempt {attempt})", flush=True)
+                s3.upload_file(str(path), bucket, key, Config=cfg)
+                break
+            except Exception as exc:  # noqa: BLE001 - report and retry any transfer failure
+                print(f"  failed: {type(exc).__name__}", flush=True)
+        else:
+            failed.append(fid)
+    if failed:
+        sys.exit(f"Upload failed for: {', '.join(failed)}. Re-run; finished films are skipped.")
     print("Done. Watch progress in the Step Functions console or: aws stepfunctions list-executions --state-machine-arn <arn>")
 
 

@@ -4,7 +4,7 @@ import re
 import subprocess
 from pathlib import Path
 
-VIDEO_EXT = {".mp4", ".mov", ".mkv", ".m4v", ".webm", ".avi"}
+VIDEO_EXT = {".mp4", ".mov", ".mkv", ".m4v", ".webm", ".avi", ".ogv"}
 
 
 def norm(s):

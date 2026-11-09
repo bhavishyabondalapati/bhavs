@@ -13,6 +13,7 @@ export default async function Header() {
         <>
           <nav className="site-nav" aria-label="Main">
             <Link href="/">Browse</Link>
+            {user.isAdmin && <Link href="/admin">Analytics</Link>}
           </nav>
           <div className="user-box">
             <span className="email" title={user.email}>{user.email}</span>

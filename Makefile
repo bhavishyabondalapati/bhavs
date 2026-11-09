@@ -8,7 +8,7 @@ TF := terraform
 INIT = export TF_VAR_state_bucket=bhavs-tfstate-$$(aws sts get-caller-identity --query Account --output text) && \
   $(TF) init -input=false -backend-config="bucket=$$TF_VAR_state_bucket" >/dev/null
 
-.PHONY: fetch-films estimate ingest transcode-local build-transcode stream-key seed-titles help check-access bootstrap deploy-persistent deploy-app destroy-app destroy-persistent test lint
+.PHONY: simulate simulate-purge analytics-refresh fetch-films estimate ingest transcode-local build-transcode stream-key seed-titles help check-access bootstrap deploy-persistent deploy-app destroy-app destroy-persistent test lint
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  %-20s %s\n", $$1, $$2}'
@@ -61,3 +61,12 @@ ingest: ## Upload media-src/ films; STARTS the paid transcode pipeline
 
 transcode-local: ## Free fallback: transcode on this Mac, then publish
 	python scripts/transcode_local.py
+
+simulate: ## Create ~200 SYNTHETIC users + viewing history (needs READY titles). Labelled synthetic everywhere.
+	python scripts/simulate_users/simulate.py
+
+simulate-purge: ## Remove all synthetic users/events/history
+	python scripts/simulate_users/simulate.py --purge
+
+analytics-refresh: ## Compact new events to Parquet and rebuild the admin analytics report (runs the Lambda)
+	./scripts/analytics_refresh.sh
