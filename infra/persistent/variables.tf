@@ -13,3 +13,9 @@ variable "budget_thresholds_usd" {
   type        = list(number)
   default     = [50, 80, 100]
 }
+
+variable "web_origins" {
+  description = "Web app origins allowed to fetch streams from CloudFront (CORS)."
+  type        = list(string)
+  default     = ["https://bhavs.vercel.app", "http://localhost:3000"]
+}

@@ -11,6 +11,12 @@ films:
     license_name: CC BY 3.0
     license_url: https://creativecommons.org/licenses/by/3.0/
     credit: "(c) copyright 2008, Blender Foundation / www.bigbuckbunny.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:Big_Buck_Bunny_4K.webm
+      license_at_source: CC BY 3.0
+      size_bytes: 300466178
+      verified: 2026-11-09
   - id: sintel
     title: Sintel
     year: 2010
@@ -20,6 +26,12 @@ films:
     license_name: CC BY 3.0
     license_url: https://creativecommons.org/licenses/by/3.0/
     credit: "(c) copyright Blender Foundation | durian.blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/f/f1/Sintel_movie_4K.webm/Sintel_movie_4K.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:Sintel_movie_4K.webm
+      license_at_source: CC BY 3.0
+      size_bytes: 253111686
+      verified: 2026-11-09
   - id: tears-of-steel
     title: Tears of Steel
     year: 2012
@@ -29,24 +41,42 @@ films:
     license_name: CC BY 3.0
     license_url: https://creativecommons.org/licenses/by/3.0/
     credit: "(CC) Blender Foundation | mango.blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/c/cb/Tears_of_Steel_1080p.webm/Tears_of_Steel_1080p.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:Tears_of_Steel_1080p.webm
+      license_at_source: CC BY 3.0
+      size_bytes: 366519642
+      verified: 2026-11-09
   - id: elephants-dream
     title: Elephants Dream
     year: 2006
     genres: [sci-fi, animation, surreal]
-    duration_sec: 654
+    duration_sec: 658
     description: Two strangers explore a vast, strange machine that may or may not be real.
     license_name: CC BY 2.5
     license_url: https://creativecommons.org/licenses/by/2.5/
     credit: "(c) copyright 2006, Blender Foundation / Netherlands Media Art Institute / www.elephantsdream.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a2/Elephants_Dream_%282006%29.webm/Elephants_Dream_%282006%29.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:Elephants_Dream_(2006).webm
+      license_at_source: CC BY 2.5
+      size_bytes: 218316481
+      verified: 2026-11-09
   - id: cosmos-laundromat
     title: Cosmos Laundromat
     year: 2015
     genres: [fantasy, animation, comedy]
-    duration_sec: 730
+    duration_sec: 731
     description: A sheep who has given up on life gets an unusual offer from a salesman with endless lives to sell.
-    license_name: CC BY 4.0
-    license_url: https://creativecommons.org/licenses/by/4.0/
+    license_name: CC BY-SA 3.0   # as listed on the Wikimedia Commons file page (the source we ingest from)
+    license_url: https://creativecommons.org/licenses/by-sa/3.0/
     credit: "(c) Blender Foundation | gooseberry.blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/3/36/Cosmos_Laundromat_-_First_Cycle_-_Official_Blender_Foundation_release.webm/Cosmos_Laundromat_-_First_Cycle_-_Official_Blender_Foundation_release.webm.1080p.vp9.webm
+      page: https://commons.wikimedia.org/wiki/File:Cosmos_Laundromat_-_First_Cycle_-_Official_Blender_Foundation_release.webm
+      license_at_source: CC BY-SA 3.0
+      size_bytes: 352022577
+      verified: 2026-11-09
   - id: spring
     title: Spring
     year: 2019
@@ -56,6 +86,12 @@ films:
     license_name: CC BY 4.0
     license_url: https://creativecommons.org/licenses/by/4.0/
     credit: "(c) Blender Studio | studio.blender.org"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/a/a5/Spring_-_Blender_Open_Movie.webm
+      page: https://commons.wikimedia.org/wiki/File:Spring_-_Blender_Open_Movie.webm
+      license_at_source: CC BY 4.0
+      size_bytes: 81781205
+      verified: 2026-11-09
   - id: agent-327
     title: "Agent 327: Operation Barbershop"
     year: 2017
@@ -74,3 +110,9 @@ films:
     license_name: CC BY 3.0
     license_url: https://creativecommons.org/licenses/by/3.0/
     credit: "(c) copyright Blender Foundation | www.caminandes.com"
+    source:
+      url: https://upload.wikimedia.org/wikipedia/commons/d/d0/Caminandes-_Llama_Drama_-_Short_Movie.ogv
+      page: https://commons.wikimedia.org/wiki/File:Caminandes-_Llama_Drama_-_Short_Movie.ogv
+      license_at_source: CC BY 3.0
+      size_bytes: 31428271
+      verified: 2026-11-09

@@ -4,7 +4,7 @@ import { getIdToken } from "@/lib/session";
 // Browser code talks to this proxy, never to the API directly: the token stays in an httpOnly cookie.
 // Only these API paths may be reached (keeps the proxy from becoming an open relay).
 const ALLOWED = [
-  /^titles$/, /^titles\/[\w-]{1,100}$/, /^me$/, /^me\/continue-watching$/,
+  /^titles$/, /^titles\/[\w-]{1,100}$/, /^titles\/[\w-]{1,100}\/stream$/, /^me$/, /^me\/continue-watching$/,
   /^me\/recommendations$/, /^events$/, /^search$/, /^admin\/analytics$/,
 ];
 

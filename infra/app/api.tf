@@ -11,6 +11,7 @@ locals {
     titles_list = {
       route   = "GET /titles"
       handler = "api.titles_list.handler"
+      env     = {}
       access = [
         { actions = ["dynamodb:Scan"], resources = [local.p.titles_table_arn] },
       ]
@@ -18,6 +19,7 @@ locals {
     titles_get = {
       route   = "GET /titles/{id}"
       handler = "api.titles_get.handler"
+      env     = {}
       access = [
         { actions = ["dynamodb:GetItem"], resources = [local.p.titles_table_arn] },
       ]
@@ -25,6 +27,7 @@ locals {
     me = {
       route   = "GET /me"
       handler = "api.me.handler"
+      env     = {}
       access = [
         { actions = ["dynamodb:UpdateItem"], resources = [local.p.users_table_arn] },
       ]
@@ -32,6 +35,7 @@ locals {
     continue_watching = {
       route   = "GET /me/continue-watching"
       handler = "api.continue_watching.handler"
+      env     = {}
       access = [
         { actions = ["dynamodb:Query"], resources = [local.p.watch_history_table_arn] },
         { actions = ["dynamodb:BatchGetItem"], resources = [local.p.titles_table_arn] },
@@ -40,14 +44,28 @@ locals {
     recommendations = {
       route   = "GET /me/recommendations"
       handler = "api.recommendations.handler"
+      env     = {}
       access = [
         { actions = ["dynamodb:Query"], resources = [local.p.recommendations_table_arn] },
         { actions = ["dynamodb:BatchGetItem", "dynamodb:Scan"], resources = [local.p.titles_table_arn] },
       ]
     }
+    stream_token = {
+      route   = "GET /titles/{id}/stream"
+      handler = "api.stream_token.handler"
+      env = {
+        CDN_DOMAIN       = local.p.cdn_domain
+        STREAM_KEY_PARAM = local.stream_key_param
+      }
+      access = [
+        { actions = ["dynamodb:GetItem"], resources = [local.p.titles_table_arn] },
+        { actions = ["ssm:GetParameter"], resources = ["arn:aws:ssm:us-east-2:${data.aws_caller_identity.me.account_id}:parameter${local.stream_key_param}"] },
+      ]
+    }
     events = {
       route   = "POST /events"
       handler = "api.events.handler"
+      env     = {}
       access = [
         { actions = ["dynamodb:UpdateItem"], resources = [local.p.watch_history_table_arn] },
         { actions = ["dynamodb:GetItem"], resources = [local.p.titles_table_arn] },
@@ -115,12 +133,12 @@ resource "aws_lambda_function" "fn" {
   timeout          = 10
 
   environment {
-    variables = {
+    variables = merge({
       TITLES_TABLE  = local.p.titles_table
       USERS_TABLE   = local.p.users_table
       HISTORY_TABLE = local.p.watch_history_table
       RECS_TABLE    = local.p.recommendations_table
-    }
+    }, each.value.env)
   }
 
   depends_on = [aws_cloudwatch_log_group.fn, aws_iam_role_policy.fn]

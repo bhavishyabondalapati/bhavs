@@ -11,3 +11,13 @@ output "titles_table_arn" { value = aws_dynamodb_table.titles.arn }
 output "users_table_arn" { value = aws_dynamodb_table.users.arn }
 output "watch_history_table_arn" { value = aws_dynamodb_table.watch_history.arn }
 output "recommendations_table_arn" { value = aws_dynamodb_table.recommendations.arn }
+
+output "source_bucket" { value = aws_s3_bucket.source.bucket }
+output "source_bucket_arn" { value = aws_s3_bucket.source.arn }
+output "output_bucket" { value = aws_s3_bucket.output.bucket }
+output "output_bucket_arn" { value = aws_s3_bucket.output.arn }
+output "ecr_repository_url" { value = aws_ecr_repository.transcode.repository_url }
+output "ecr_repository_arn" { value = aws_ecr_repository.transcode.arn }
+output "cdn_domain" { value = aws_cloudfront_distribution.cdn.domain_name }
+output "cdn_distribution_id" { value = aws_cloudfront_distribution.cdn.id }
+output "stream_kvs_arn" { value = aws_cloudfront_key_value_store.keys.arn }

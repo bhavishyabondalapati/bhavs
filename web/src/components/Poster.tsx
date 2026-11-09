@@ -7,7 +7,13 @@ function hue(id: string) {
   return h;
 }
 
-export default function Poster({ title, src }: { title: Title; src?: string }) {
+// Posters are public artwork served by CloudFront (the stream itself needs a token, the poster does not).
+function posterUrl(t: Title) {
+  const cdn = process.env.BHAVS_CDN_URL;
+  return cdn && t.poster_path ? `${cdn}/${t.poster_path}` : undefined;
+}
+
+export default function Poster({ title, src = posterUrl(title) }: { title: Title; src?: string }) {
   const h = hue(title.id);
   const bg = `linear-gradient(160deg, hsl(${h} 55% 28%), hsl(${(h + 50) % 360} 60% 14%))`;
   return (

@@ -68,7 +68,7 @@ def get_titles(ids):
 # Fields the browser may see (never internal storage keys).
 PUBLIC_FIELDS = (
     "id", "title", "year", "genres", "description", "duration_sec", "status",
-    "poster_path", "license_name", "license_url", "credit", "renditions", "hls_path",
+    "poster_path", "sprite_path", "license_name", "license_url", "credit", "renditions", "hls_path",
 )
 
 

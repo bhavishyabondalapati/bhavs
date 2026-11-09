@@ -47,6 +47,9 @@ data "terraform_remote_state" "persistent" {
   }
 }
 
+data "aws_caller_identity" "me" {}
+
 locals {
-  p = data.terraform_remote_state.persistent.outputs
+  p                = data.terraform_remote_state.persistent.outputs
+  stream_key_param = "/bhavs/stream-hmac-key"
 }
