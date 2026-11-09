@@ -13,3 +13,16 @@ Budget: ~$100 AWS credits, target well under. Alerts at $50 / $80 / $100 actual 
 | Phase 6 | CloudWatch dashboard ($3/mo), alarms, load test | few $ | |
 
 Idle cost right now: $0.
+
+## Budgets
+- `bhavs-usage` (account-wide, credits excluded): alerts at $50 / $80 / $100 actual. It also counts your other projects in this account.
+- **Tag-filtered budget (Project=bhavs): NOT possible from this account.** This account is a member of an AWS
+  Organization and `ce:ListCostAllocationTags` / activation is denied ("Linked account doesn't have access to cost
+  allocation tags"). Only the Organization's management account can activate the `Project` tag. If it is activated
+  later, add a second `aws_budgets_budget` with `cost_filter { name = "TagKeyValue" values = ["user:Project$bhavs"] }`.
+
+## Actuals
+| When | Item | Cost |
+|---|---|---|
+| Phase 1 deploy | 53 resources, all pay-per-use, nothing billing while idle | ~$0.00 |
+| Vercel | Hobby project `bhavs` | $0 |
