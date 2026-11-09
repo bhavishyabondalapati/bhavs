@@ -43,3 +43,23 @@ Idle cost right now: $0.
   egress) covers this project.
 - Docker note: pushing one large image layer through Docker Desktop's proxy failed repeatedly, so the Dockerfile
   uses Alpine and splits the install into several small layers (the image is 79 MB compressed vs ~550 MB).
+
+## First real transcode: Big Buck Bunny (measured, 2026-11-09)
+| | Measured |
+|---|---|
+| Video length | 10.6 min (635 s), 1920x1080 WebM, 300 MB |
+| Capacity used | FARGATE_SPOT, ARM64, 4 vCPU / 8 GB, platform 1.4.0 (first attempt succeeded, no on-demand retry) |
+| Billed task time | 7 min 42 s (image pull started 14:37:00, task stopped 14:44:42) |
+| End to end (upload -> READY) | 8 min 10 s = **1.3x realtime** overall; ffmpeg itself ran at **1.6x realtime** (48 fps) |
+| Cost, on-demand-equivalent | 0.1283 h x $0.158 + public IPv4 + 10 GB extra storage = **~$0.021** (Spot is cheaper; the real bill shows in Cost Explorer ~24 h later) |
+| Output | 895 MB total: 360p 77 MB, 540p 156 MB, 720p 251 MB, 1080p 410 MB (433 objects) |
+| vs. estimate | estimated $0.026-$0.064 -> actual (on-demand basis) $0.021: slightly better than the optimistic end |
+
+The speed assumption in the cost model (0.5x-1.5x realtime) was slightly pessimistic: real speed was 1.6x.
+
+## Phase 3 additions (idle cost ~ $0)
+- SQS (events + DLQ), 3 Lambdas, Glue database + 2 tables (partition projection, no crawler), Athena workgroup `bhavs`
+  (1 GB scan cap per query = at most $0.005), hourly EventBridge Scheduler: all per-use.
+- Athena: $5 per TB scanned, 10 MB minimum per query. The 5 report queries scan well under 10 MB each, so
+  a full report refresh costs ~$0.00025. The hourly job only rebuilds the report when new hours were compacted.
+- S3 analytics bucket: a few MB of gzip/Parquet.
