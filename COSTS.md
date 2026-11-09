@@ -5,7 +5,7 @@ Budget: ~$100 AWS credits, target well under. Alerts at $50 / $80 / $100 actual 
 | Phase | What bills | Estimated cost | Actual |
 |---|---|---|---|
 | Setup / Phase 0 | nothing (read-only CLI calls, 2 tiny Bedrock embedding calls) | ~$0.00 | |
-| Phase 1 | DynamoDB on-demand, Lambda, API GW, Cognito (all free tier / pennies) | <$1 | |
+| Phase 1 | DynamoDB on-demand, Lambda, API GW, Cognito Essentials, Budgets (first 2 budgets free), CloudWatch logs | <$0.50 for the whole phase; ~$0 idle | |
 | Phase 2 | MediaConvert (main cost), S3 storage | TBD from your files | |
 | Phase 3 | Firehose, Athena, S3 | few $ | |
 | Phase 4 | SageMaker CPU training job | cents per run | |
