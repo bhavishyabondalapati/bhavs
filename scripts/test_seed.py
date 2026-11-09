@@ -5,7 +5,7 @@ import boto3
 from moto import mock_aws
 
 sys.path.insert(0, str(Path(__file__).parent))
-import seed_titles  # noqa: E402
+import seed_titles
 
 ROOT = Path(__file__).resolve().parent.parent
 
