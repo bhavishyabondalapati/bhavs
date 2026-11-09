@@ -69,6 +69,10 @@ echo; echo "== Analytics: Firehose / Glue / Athena / S3 =="
 run "Firehose list-delivery-streams" \
   "API writes JSONL straight to S3 via Lambda batching; Glue crawler/ETL converts to Parquet" \
   aws firehose list-delivery-streams --limit 1
+run "Kinesis Data Streams list-streams" "SQS buffer + batch Lambda writing to S3" aws kinesis list-streams --limit 1
+run "ECR describe-repositories (container fallbacks)" "none" aws ecr describe-repositories --max-items 1
+run "ECS list-clusters (Fargate fallback)" "none" aws ecs list-clusters --max-items 1
+run "SQS list-queues" "none" aws sqs list-queues --max-items 1
 run "Glue get-databases" "none needed for Athena DDL: create tables with Athena CREATE EXTERNAL TABLE" \
   aws glue get-databases --max-results 1
 run "Athena list-work-groups" "query the S3 data locally with DuckDB" \
