@@ -182,7 +182,7 @@ resource "aws_athena_workgroup" "bhavs" {
   name          = "bhavs"
   force_destroy = true
   configuration {
-    enforce_workgroup_configuration    = true
+    enforce_workgroup_configuration    = false # CTAS to a partition folder needs external_location, which an enforced workgroup forbids
     publish_cloudwatch_metrics_enabled = true
     bytes_scanned_cutoff_per_query     = 1073741824 # 1 GB hard stop = at most $0.005 per query
     result_configuration {

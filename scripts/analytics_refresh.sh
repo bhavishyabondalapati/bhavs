@@ -8,6 +8,7 @@ for i in 1 2 3 4 5 6; do
   aws lambda invoke --region us-east-2 --function-name "$FN" --cli-read-timeout 900 \
     --payload '{}' --cli-binary-format raw-in-base64-out /tmp/bhavs_compact.json >/dev/null
   cat /tmp/bhavs_compact.json; echo
+  if grep -q errorMessage /tmp/bhavs_compact.json; then echo 'Lambda reported an error (see above)' >&2; exit 1; fi
   # Lambda processes a bounded number of hours per run; stop when nothing was compacted.
   if grep -q '"compacted": \[\]' /tmp/bhavs_compact.json; then break; fi
 done
