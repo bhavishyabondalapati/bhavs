@@ -1,0 +1,13 @@
+output "region" { value = "us-east-2" }
+output "user_pool_id" { value = aws_cognito_user_pool.main.id }
+output "user_pool_arn" { value = aws_cognito_user_pool.main.arn }
+output "user_pool_client_id" { value = aws_cognito_user_pool_client.web.id }
+output "user_pool_issuer" { value = "https://cognito-idp.us-east-2.amazonaws.com/${aws_cognito_user_pool.main.id}" }
+output "titles_table" { value = aws_dynamodb_table.titles.name }
+output "users_table" { value = aws_dynamodb_table.users.name }
+output "watch_history_table" { value = aws_dynamodb_table.watch_history.name }
+output "recommendations_table" { value = aws_dynamodb_table.recommendations.name }
+output "titles_table_arn" { value = aws_dynamodb_table.titles.arn }
+output "users_table_arn" { value = aws_dynamodb_table.users.arn }
+output "watch_history_table_arn" { value = aws_dynamodb_table.watch_history.arn }
+output "recommendations_table_arn" { value = aws_dynamodb_table.recommendations.arn }

@@ -1,0 +1,76 @@
+# Catalogue metadata for bhavs. Descriptions are written for bhavs (not copied from anywhere).
+# `source` is filled in only after scripts/fetch_films.sh has verified a working URL.
+# All films below are released by the Blender Foundation / Blender Studio under Creative Commons.
+films:
+  - id: big-buck-bunny
+    title: Big Buck Bunny
+    year: 2008
+    genres: [comedy, animation, family]
+    duration_sec: 635
+    description: A gentle giant rabbit has had enough of three bullying rodents and plans a very elaborate payback.
+    license_name: CC BY 3.0
+    license_url: https://creativecommons.org/licenses/by/3.0/
+    credit: "(c) copyright 2008, Blender Foundation / www.bigbuckbunny.org"
+  - id: sintel
+    title: Sintel
+    year: 2010
+    genres: [fantasy, animation, adventure]
+    duration_sec: 888
+    description: A lone warrior searches a harsh world for the small dragon she once befriended.
+    license_name: CC BY 3.0
+    license_url: https://creativecommons.org/licenses/by/3.0/
+    credit: "(c) copyright Blender Foundation | durian.blender.org"
+  - id: tears-of-steel
+    title: Tears of Steel
+    year: 2012
+    genres: [sci-fi, action, robots]
+    duration_sec: 734
+    description: In a ruined future Amsterdam, a band of fighters try to stop a robot threat with one last experiment.
+    license_name: CC BY 3.0
+    license_url: https://creativecommons.org/licenses/by/3.0/
+    credit: "(CC) Blender Foundation | mango.blender.org"
+  - id: elephants-dream
+    title: Elephants Dream
+    year: 2006
+    genres: [sci-fi, animation, surreal]
+    duration_sec: 654
+    description: Two strangers explore a vast, strange machine that may or may not be real.
+    license_name: CC BY 2.5
+    license_url: https://creativecommons.org/licenses/by/2.5/
+    credit: "(c) copyright 2006, Blender Foundation / Netherlands Media Art Institute / www.elephantsdream.org"
+  - id: cosmos-laundromat
+    title: Cosmos Laundromat
+    year: 2015
+    genres: [fantasy, animation, comedy]
+    duration_sec: 730
+    description: A sheep who has given up on life gets an unusual offer from a salesman with endless lives to sell.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Foundation | gooseberry.blender.org"
+  - id: spring
+    title: Spring
+    year: 2019
+    genres: [fantasy, animation, adventure]
+    duration_sec: 464
+    description: A shepherd girl and her dog face ancient spirits in a story about the turning of the seasons.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Studio | studio.blender.org"
+  - id: agent-327
+    title: "Agent 327: Operation Barbershop"
+    year: 2017
+    genres: [comedy, action, animation]
+    duration_sec: 232
+    description: A secret agent walks into a barbershop and finds the haircut is the least suspicious thing in it.
+    license_name: CC BY 4.0
+    license_url: https://creativecommons.org/licenses/by/4.0/
+    credit: "(c) Blender Institute | agent327.com"
+  - id: caminandes-llama-drama
+    title: "Caminandes: Llama Drama"
+    year: 2013
+    genres: [comedy, animation, family]
+    duration_sec: 90
+    description: A llama and a very stubborn fence, with a very short deadline to cross.
+    license_name: CC BY 3.0
+    license_url: https://creativecommons.org/licenses/by/3.0/
+    credit: "(c) copyright Blender Foundation | www.caminandes.com"
