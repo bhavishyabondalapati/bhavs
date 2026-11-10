@@ -1,0 +1,45 @@
+# Labelled queries for evaluating search (see ml/search_eval.py). Written BEFORE looking at any scores.
+# `relevant` = ids a reasonable viewer would expect for that query (judged from the film itself plus its catalogue
+# text). An empty list means "nothing in the catalogue should match": the right answer is NO results.
+#
+# Two sets, on purpose:
+#   dev  - used ONLY to pick the cosine floor (SEARCH_VEC_FLOOR). Tuning on these is allowed.
+#   test - the reported numbers. Never used for tuning.
+dev:
+  - {q: "a dragon and a warrior", relevant: [sintel]}
+  - {q: "bunny", relevant: [big-buck-bunny]}
+  - {q: "a sheep with endless lives", relevant: [cosmos-laundromat]}
+  - {q: "mysterious machine", relevant: [elephants-dream]}
+  - {q: "future robot war", relevant: [tears-of-steel]}
+  - {q: "baking a chocolate cake", relevant: []}
+  - {q: "tax filing deadline", relevant: []}
+  - {q: "basketball game score", relevant: []}
+  - {q: "learn spanish grammar", relevant: []}
+test:
+  - {q: "robots in the future", relevant: [tears-of-steel]}
+  - {q: "llama", relevant: [caminandes-gran-dillama, caminandes-llama-drama, caminandes-llamigos]}
+  - {q: "a lonely dragon", relevant: [sintel]}
+  - {q: "rabbit takes revenge on bullies", relevant: [big-buck-bunny]}
+  - {q: "sheep", relevant: [cosmos-laundromat]}
+  - {q: "shepherd girl and her dog", relevant: [spring]}
+  - {q: "space adventure", relevant: [singularity]}
+  - {q: "strange machine", relevant: [elephants-dream]}
+  - {q: "penguin", relevant: [caminandes-llamigos]}
+  - {q: "winter in Patagonia", relevant: [caminandes-llamigos]}
+  - {q: "warrior", relevant: [sintel]}
+  - {q: "hand drawn 2D animation", relevant: [hero]}
+  - {q: "science fiction", relevant: [tears-of-steel, elephants-dream, singularity]}
+  - {q: "fantasy adventure", relevant: [sintel, spring]}
+  - {q: "one minute short", relevant: [daily-dweebs]}
+  - {q: "funny family cartoon", relevant: [big-buck-bunny, caminandes-gran-dillama, caminandes-llama-drama, caminandes-llamigos]}
+  - {q: "ancient spirits and the seasons", relevant: [spring]}
+  - {q: "salesman selling lives", relevant: [cosmos-laundromat]}
+  - {q: "ruined Amsterdam", relevant: [tears-of-steel]}
+  - {q: "Koro and Oti", relevant: [caminandes-llamigos]}
+  - {q: "stubborn fence", relevant: [caminandes-llama-drama]}
+  - {q: "big buck", relevant: [big-buck-bunny]}
+  - {q: "cooking pasta recipe", relevant: []}
+  - {q: "football match highlights", relevant: []}
+  - {q: "stock market news", relevant: []}
+  - {q: "romantic comedy love story", relevant: []}
+  - {q: "how to fix a car engine", relevant: []}

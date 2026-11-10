@@ -13,11 +13,12 @@ is written in Phase 6. See COSTS.md for the running cost estimate.
 - Benchmark data credit: MovieLens from [GroupLens](https://grouplens.org/datasets/movielens/) (F. Maxwell Harper and
   Joseph A. Konstan, *The MovieLens Datasets: History and Context*, ACM TiiS 2015). Not redistributed; `ml/data/` is gitignored.
 
-## Semantic search (Phase 5)
+## Search (Phase 5): hybrid keywords + meaning
 - `make embed` turns every READY title (name + genres + description) into a 256-number vector with Amazon Bedrock
-  Titan Text Embeddings V2 and saves them as one JSON file in S3.
-- `GET /search?q=...` embeds the query with the same model and ranks titles by cosine similarity in plain Python inside
-  a Lambda, so "a lonely dragon" finds Sintel. Titles whose name contains the query are listed first.
-- No vector database: with ~20 titles, comparing against all of them takes microseconds. Re-run `make embed` after
-  adding films.
-- Known limit: the relevance cut-off was tuned by eye on 17 short descriptions, so some reasonable queries return nothing.
+  Titan Text Embeddings V2 and saves the vectors plus the keyword text as one JSON file in S3.
+- `GET /search?q=...` runs two searches inside a Lambda and merges them with reciprocal rank fusion (RRF):
+  **meaning** (cosine similarity of the query's Titan vector, so "a lonely dragon" finds Sintel) and **keywords**
+  (BM25, so exact words like "Patagonia" or "fence" always count). No vector database: ~20 titles take microseconds.
+- Evaluated with `make search-eval` on labelled queries (`ml/search_eval.yaml`, dev/test split). Held-out test set:
+  hybrid hit@3 **0.955** / MRR **0.864** vs vector-only 0.636 / 0.492, with no extra false results on the "should find
+  nothing" queries (4/5 for both). Small, self-labelled set: see [ml/SEARCH_EVAL.md](ml/SEARCH_EVAL.md) for caveats.

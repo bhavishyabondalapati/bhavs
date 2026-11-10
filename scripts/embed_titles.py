@@ -1,4 +1,4 @@
-"""Build the search index: embed every READY title with Bedrock Titan V2 and save it to S3.
+"""Build the search index: embed every READY title with Bedrock Titan V2 and save it (plus its keyword text) to S3.
 
 Cost: ~20 titles x ~60 tokens x $0.00002 per 1K tokens = a fraction of a cent. Re-run after adding titles.
 Usage: python scripts/embed_titles.py [--dry-run]
@@ -17,7 +17,7 @@ KEY = "search/embeddings.json"
 
 
 def build(titles):
-    return [{"id": t["id"], "title": t["title"], "vector": embed.embed(embed.title_text(t))}
+    return [{"id": t["id"], "title": t["title"], "text": embed.keyword_text(t), "vector": embed.embed(embed.title_text(t))}
             for t in sorted(titles, key=lambda t: t["id"]) if t.get("status") == "READY"]
 
 

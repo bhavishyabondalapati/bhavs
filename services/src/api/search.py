@@ -1,9 +1,15 @@
-"""GET /search?q=... - semantic search over the catalogue.
+"""GET /search?q=... - hybrid (meaning + keywords) search over the catalogue.
 
 How it works (simple version): every title was turned into a vector once (scripts/embed_titles.py) and saved to S3. At
-query time we turn the search text into a vector with the same model and rank titles by cosine similarity, so
-"a lonely dragon" finds Sintel even though those words are not in its description. With ~20 titles, comparing against
-all of them in plain Python takes microseconds, so there is no vector database to pay for.
+query time we run two searches and merge them:
+  1. meaning: embed the query with the same model and rank titles by cosine similarity, so "a lonely dragon" finds
+     Sintel even though those words are not in its description;
+  2. keywords: BM25 over each title's name, genres and description (shared/textsearch.py), so exact words like "llama"
+     or "Koro" always count.
+The two ranked lists are merged with reciprocal rank fusion (RRF): each list gives a title 1/(k + rank) points and the
+points are added up, so a title that is high in BOTH lists wins, without having to compare cosine scores to BM25
+scores (they are on different scales). With ~20 titles all of this runs in plain Python in microseconds, so there is
+no vector database to pay for.
 """
 import json
 import os
@@ -11,11 +17,16 @@ import time
 
 import boto3
 from botocore.exceptions import ClientError
-from shared import embed
+from shared import embed, textsearch
 from shared.common import error, get_titles, response
 
-MIN_SCORE = float(os.environ.get("SEARCH_MIN_SCORE", "0.24"))  # floor: below this nothing is "really related"
-REL_CUTOFF = 0.75  # ...and keep only results scoring at least 75% of the best one (tuned by eye on 17 titles)
+MIN_SCORE = float(os.environ.get("SEARCH_MIN_SCORE", "0.24"))  # vector-only mode (kept for the eval baseline)
+REL_CUTOFF = 0.75  # vector-only mode: keep only results scoring at least 75% of the best one
+# hybrid: a cosine below this is treated as "no meaning signal". 0.30 was picked on the DEV queries of
+# ml/search_eval.yaml (0.30-0.40 tied best; the lowest was kept so meaning can still help); never tuned on the test set.
+VEC_FLOOR = float(os.environ.get("SEARCH_VEC_FLOOR", "0.30"))
+RRF_K = 10  # RRF damping; small because lists are short (60 is the usual value for lists of hundreds)
+MIN_NAME_CHARS = 3  # a query this long (or longer) contained in a title name counts as a name match
 MAX_RESULTS = 8
 MAX_QUERY_CHARS = 200
 INDEX_TTL = 300  # seconds a warm Lambda keeps the index before re-reading S3
@@ -45,7 +56,7 @@ def _query_vector(q):
     return _query_cache[key]
 
 
-def rank(q, items, qvec):
+def rank_vector(q, items, qvec):
     """Titles whose NAME contains the query come first (exact beats fuzzy); the rest are ordered by cosine similarity.
 
     The similarity cut-off is relative to the best *semantic* score, so a name match never hides related titles.
@@ -60,6 +71,30 @@ def rank(q, items, qvec):
         elif score >= MIN_SCORE and score >= REL_CUTOFF * best:
             related.append((score, it["id"]))
     return (named + related)[:MAX_RESULTS]
+
+
+def rank_hybrid(q, items, qvec, vec_floor=None):
+    """Hybrid ranking: name matches first, then the RRF fusion of the cosine list and the BM25 list.
+
+    "No results" happens only when BOTH signals are weak: every cosine is under the floor AND no word matches.
+    """
+    floor = VEC_FLOOR if vec_floor is None else vec_floor
+    ql = q.lower()
+    cos = {it["id"]: embed.dot(qvec, it["vector"]) for it in items}
+    by_cos = [i for i in sorted(cos, key=lambda i: -cos[i]) if cos[i] >= floor]
+    kw = textsearch.bm25_scores(q, items)
+    by_kw = sorted(kw, key=lambda i: -kw[i])
+    fused = {}
+    for ranking in (by_cos, by_kw):
+        for r, i in enumerate(ranking, 1):
+            fused[i] = fused.get(i, 0.0) + 1.0 / (RRF_K + r)
+    named = [it["id"] for it in items if len(ql) >= MIN_NAME_CHARS and ql in it.get("title", "").lower()]
+    out = [(1.0, i) for i in named]
+    out += [(s, i) for i, s in sorted(fused.items(), key=lambda x: -x[1]) if i not in named]
+    return out[:MAX_RESULTS]
+
+
+rank = rank_hybrid  # what the handler uses
 
 
 def handler(event, context):

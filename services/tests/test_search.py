@@ -25,9 +25,11 @@ def index(db, monkeypatch):
     monkeypatch.setenv("EMBEDDINGS_KEY", "search/embeddings.json")
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="lake", CreateBucketConfiguration={"LocationConstraint": "us-east-2"})
-    docs = [{"id": "sintel", "title": "Sintel", "vector": fake_embed("warrior dragon")},
-            {"id": "bbb", "title": "Big Buck Bunny", "vector": fake_embed("rabbit forest")},
-            {"id": "broken", "title": "Broken", "vector": fake_embed("space")}]
+    docs = [{"id": "sintel", "title": "Sintel", "text": "Genres: fantasy. A lone warrior and a small dragon.",
+             "vector": fake_embed("warrior dragon")},
+            {"id": "bbb", "title": "Big Buck Bunny", "text": "Genres: comedy. A giant rabbit plans payback on bullies.",
+             "vector": fake_embed("rabbit forest")},
+            {"id": "broken", "title": "Broken", "text": "Genres: sci-fi.", "vector": fake_embed("space")}]
     s3.put_object(Bucket="lake", Key="search/embeddings.json", Body=json.dumps({"items": docs}))
     search._index.update(at=0.0, items=[])
     search._query_cache.clear()
@@ -78,3 +80,17 @@ def test_missing_index_is_503(db, monkeypatch):
         monkeypatch.setenv("EMBEDDINGS_KEY", "k")
         search._index.update(at=0.0, items=[])
         assert run("dragon")[0] == 503
+
+
+def test_keywords_find_what_meaning_misses(index):
+    # "payback" and "bullies" are not in the fake embedder's vocabulary, so only BM25 can find Big Buck Bunny.
+    _, body = run("payback on the bullies")
+    assert [t["id"] for t in body["results"]] == ["bbb"]
+
+
+def test_bm25_stemming_and_stopwords():
+    from shared import textsearch
+    assert textsearch.tokenize("The Robots and dragons") == ["robot", "dragon"]
+    items = [{"id": "a", "title": "A", "text": "robot war"}, {"id": "b", "title": "B", "text": "quiet garden"}]
+    assert set(textsearch.bm25_scores("robots", items)) == {"a"}
+    assert textsearch.bm25_scores("the and of", items) == {}

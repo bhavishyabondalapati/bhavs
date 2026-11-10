@@ -36,5 +36,10 @@ def title_text(t):
     return f"{t.get('title', '')}. Genres: {genres}. {t.get('description', '')}".strip()
 
 
+def keyword_text(t):
+    """The text keyword search (BM25) reads for a title, besides its name: genres + description. Stored in the index."""
+    return f"Genres: {', '.join(t.get('genres', []))}. {t.get('description', '')}"
+
+
 def dot(a, b):
     return sum(x * y for x, y in zip(a, b))
