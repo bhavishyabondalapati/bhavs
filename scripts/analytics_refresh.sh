@@ -12,3 +12,9 @@ for i in 1 2 3 4 5 6; do
   # Lambda processes a bounded number of hours per run; stop when nothing was compacted.
   if grep -q '"compacted": \[\]' /tmp/bhavs_compact.json; then break; fi
 done
+# Scheduled runs rebuild the report at most every few hours (Athena cost); a manual refresh wants it now.
+if grep -q '"report": "deferred' /tmp/bhavs_compact.json; then
+  aws lambda invoke --region us-east-2 --function-name "$FN" --cli-read-timeout 900 \
+    --payload '{"report_only": true}' --cli-binary-format raw-in-base64-out /tmp/bhavs_compact.json >/dev/null
+  cat /tmp/bhavs_compact.json; echo
+fi

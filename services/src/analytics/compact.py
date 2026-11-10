@@ -2,6 +2,10 @@
 
 Idempotent: an hour that already has Parquet is skipped; only hours that are fully over are compacted.
 Event: {} (scheduled)  |  {"report_only": true}  |  {"force_hours": ["2026-11-01/18"]}
+
+Cost note: Athena lists every hour folder a query could touch. The report queries therefore filter on the last
+REPORT_DAYS days (a literal date passed as a query parameter, which Athena uses to prune), and a scheduled run
+rebuilds the report at most every REPORT_MIN_HOURS. Without these, each rebuild made ~37,000 S3 LIST requests.
 """
 import datetime as dt
 import json
@@ -17,6 +21,8 @@ SQL_DIR = Path(__file__).parent / "sql"
 COLUMNS = "ts, received_at, type, user_id, title_id, session_id, position, duration, bitrate_kbps, rendition, synthetic"
 MAX_HOURS_PER_RUN = 30  # bounds runtime; scripts/analytics_refresh.sh simply invokes again until nothing is left
 REPORT_KEY = "reports/analytics.json"
+REPORT_DAYS = int(os.environ.get("REPORT_DAYS", "30"))
+REPORT_MIN_HOURS = float(os.environ.get("REPORT_MIN_HOURS", "6"))
 PART_RE = re.compile(r"^(?:raw|parquet)/dt=(\d{4}-\d{2}-\d{2})/hour=(\d{2})/")
 
 
@@ -51,9 +57,10 @@ def ctas_sql(table, bucket, d, h):
             f"SELECT {COLUMNS} FROM {DB}.events_raw WHERE dt='{d}' AND hour='{h}'")
 
 
-def run(athena, sql, workgroup, database=DB, timeout=600):
+def run(athena, sql, workgroup, database=DB, timeout=600, params=None):
+    kw = {"ExecutionParameters": params} if params else {}
     qid = athena.start_query_execution(QueryString=sql, WorkGroup=workgroup,
-                                       QueryExecutionContext={"Database": database})["QueryExecutionId"]
+                                       QueryExecutionContext={"Database": database}, **kw)["QueryExecutionId"]
     t0 = time.time()
     while True:
         st = athena.get_query_execution(QueryExecutionId=qid)["QueryExecution"]["Status"]
@@ -90,21 +97,50 @@ def num(v):
         return v
 
 
-def build_report(athena, workgroup):
-    report = {"generated_at": int(time.time())}
+def report_since(now):
+    return (now - dt.timedelta(days=REPORT_DAYS)).strftime("%Y-%m-%d")
+
+
+def build_report(athena, workgroup, now=None):
+    since = report_since(now or dt.datetime.now(dt.UTC))
+    report = {"generated_at": int(time.time()), "since": since, "days": REPORT_DAYS}
     for name in ("views_per_title", "avg_watch_pct", "drop_off", "bitrate_distribution", "totals"):
         sql = (SQL_DIR / f"{name}.sql").read_text()
-        data = [{k: (v if k in ("title_id", "rendition") else num(v)) for k, v in r.items()} for r in rows(athena, run(athena, sql, workgroup))]
+        qid = run(athena, sql, workgroup, params=[f"'{since}'"])
+        data = [{k: (v if k in ("title_id", "rendition") else num(v)) for k, v in r.items()} for r in rows(athena, qid)]
         report[name] = data[0] if name == "totals" and data else data
     return report
 
 
-def _exists(s3, bucket, key):
+def _report_modified(s3, bucket):
+    """When the cached report was last written, or None if there is none yet."""
     try:
-        s3.head_object(Bucket=bucket, Key=key)
-        return True
+        return s3.head_object(Bucket=bucket, Key=REPORT_KEY)["LastModified"]
     except s3.exceptions.ClientError:
-        return False
+        return None
+
+
+def newest_parquet(s3, bucket):
+    """LastModified of the newest Parquet file (None if there is no Parquet yet)."""
+    newest, token = None, None
+    while True:
+        page = s3.list_objects_v2(Bucket=bucket, Prefix="parquet/", **({"ContinuationToken": token} if token else {}))
+        for o in page.get("Contents", []):
+            newest = o["LastModified"] if newest is None or o["LastModified"] > newest else newest
+        token = page.get("NextContinuationToken")
+        if not token:
+            return newest
+
+
+def report_decision(report_modified, parquet_newest, now, min_hours=None):
+    """'build', 'unchanged' (report already includes all Parquet) or 'deferred' (newer data, but rebuilt recently)."""
+    if report_modified is None:
+        return "build"
+    if report_modified >= parquet_newest:
+        return "unchanged"
+    if (now - report_modified).total_seconds() / 3600 < (REPORT_MIN_HOURS if min_hours is None else min_hours):
+        return "deferred"
+    return "build"
 
 
 def handler(event, context):
@@ -123,10 +159,15 @@ def handler(event, context):
             run(athena, ctas_sql(table, bucket, d, h), wg)
             run(athena, f"DROP TABLE IF EXISTS {DB}.{table}", wg)
             compacted.append(f"{d}/{h}")
-    if not list_partitions(s3, bucket, "parquet/"):
+    parquet_newest = newest_parquet(s3, bucket)
+    if parquet_newest is None:
         return {"compacted": compacted, "report": "skipped (no parquet data yet)"}
-    if not compacted and not event.get("report_only") and _exists(s3, bucket, REPORT_KEY):
-        return {"compacted": [], "report": "unchanged (nothing new to compact)"}  # saves ~5 Athena queries per idle hour
+    if not event.get("report_only"):
+        decision = report_decision(_report_modified(s3, bucket), parquet_newest, dt.datetime.now(dt.UTC))
+        if decision == "unchanged":
+            return {"compacted": compacted, "report": "unchanged (already includes all data)"}  # no Athena at all
+        if decision == "deferred":
+            return {"compacted": compacted, "report": f"deferred (rebuilt at most every {REPORT_MIN_HOURS:g} h)"}
     report = build_report(athena, wg)
     s3.put_object(Bucket=bucket, Key=REPORT_KEY, Body=json.dumps(report), ContentType="application/json")
     return {"compacted": compacted, "report": "written"}

@@ -1,3 +1,13 @@
+variable "analytics_start_date" {
+  description = <<-EOT
+    First day (yyyy-MM-dd) that can hold analytics events: the start of Athena's partition projection. Data in
+    earlier dt= folders is invisible to queries. The synthetic simulator backfills --days (default 10) before "now",
+    so its first run (2026-11-09) wrote data from 2026-10-31. Lower this before backfilling further back.
+  EOT
+  type        = string
+  default     = "2026-10-31"
+}
+
 # Events pipeline (Firehose is blocked by an SCP, so this is the equivalent):
 #   POST /events -> SQS -> batch Lambda -> S3 raw/ (gzip JSONL, partitioned dt/hour)
 #   hourly Scheduler -> compact Lambda -> Athena CTAS -> S3 parquet/ (partitioned dt/hour) -> cached admin report
@@ -103,10 +113,12 @@ locals {
     synthetic    = "boolean"
   }
   projection = {
-    "projection.enabled"          = "true"
-    "projection.dt.type"          = "date"
-    "projection.dt.format"        = "yyyy-MM-dd"
-    "projection.dt.range"         = "2026-01-01,NOW"
+    "projection.enabled"   = "true"
+    "projection.dt.type"   = "date"
+    "projection.dt.format" = "yyyy-MM-dd"
+    # Start at the first day with data: Athena checks every possible dt/hour folder in this range that a query
+    # does not rule out, so a wide range made each report rebuild ~37,000 S3 LIST requests (see COSTS.md).
+    "projection.dt.range"         = "${var.analytics_start_date},NOW"
     "projection.dt.interval"      = "1"
     "projection.dt.interval.unit" = "DAYS"
     "projection.hour.type"        = "integer"

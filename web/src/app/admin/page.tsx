@@ -8,6 +8,8 @@ export const metadata: Metadata = { title: "Analytics" };
 
 type Report = {
   generated_at: number | null;
+  since?: string;
+  days?: number;
   empty?: boolean;
   totals?: { events: number; users: number; sessions: number; synthetic_events: number };
   views_per_title?: { title_id: string; views: number; unique_viewers: number }[];
@@ -66,6 +68,7 @@ export default async function Admin() {
         </p>
       )}
       <p className="hint">
+        {report.since ? <>Last {report.days} days (since {report.since}) · </> : null}
         Updated {report.generated_at ? new Date(report.generated_at * 1000).toLocaleString() : "never"} · built by Athena
         over Parquet in S3
       </p>

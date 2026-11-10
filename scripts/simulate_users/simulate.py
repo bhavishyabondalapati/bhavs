@@ -41,6 +41,8 @@ def summarize(res):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--users", type=int, default=200)
+    # Events are backdated up to --days before now. Athena only sees days on or after var.analytics_start_date
+    # (infra/app/analytics.tf), so lower that variable before backfilling further back than it.
     ap.add_argument("--days", type=int, default=10)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--dry-run", action="store_true")
