@@ -63,3 +63,17 @@ The speed assumption in the cost model (0.5x-1.5x realtime) was slightly pessimi
 - Athena: $5 per TB scanned, 10 MB minimum per query. The 5 report queries scan well under 10 MB each, so
   a full report refresh costs ~$0.00025. The hourly job only rebuilds the report when new hours were compacted.
 - S3 analytics bucket: a few MB of gzip/Parquet.
+
+## Catalogue transcodes (17 films, measured)
+- 17 titles, 2.2 GB of sources, ~108 min of video; all on Fargate Spot ARM64, 4 vCPU / 8 GB.
+- Retries cost extra: **hero**, **coffee-run** and **caminandes-gran-dillama** were transcoded twice because of problems
+  on *my* side (a corrupted local download for all three, plus a filename-matching bug that fed Gran Dillama the wrong
+  film). Roughly 5 extra task-runs of a few minutes each, i.e. a few cents. Both bugs are fixed and tested.
+- Estimated total for all runs: ~$0.30 on-demand-equivalent. The real figure shows in Cost Explorer ~24 h later.
+
+## Phase 4 (recommendations)
+- **Local (free):** the MovieLens benchmark (small + 1M) runs on the Mac (Apple GPU via `mps`): ~6.5 min for ml-1m.
+- **Cloud training job** (not yet run): Fargate ARM64, **2 vCPU / 4 GB** (SageMaker `ml.m5.large` quota is 0, request still
+  `CASE_OPENED`). Price: 2 x $0.03238 + 4 x $0.00356 + $0.005 (IPv4) = **$0.084/hour** on-demand. A run is ~3 min including
+  the ~1.6 GB image pull, so **~$0.004 per run on-demand** (Spot cheaper). Weekly = ~$0.02/month.
+- ECR `bhavs-train` image (CPU PyTorch, ~0.5 GB compressed): ~$0.05/month. Weekly schedule exists but is **DISABLED**.

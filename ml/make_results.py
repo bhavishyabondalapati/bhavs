@@ -83,7 +83,9 @@ the GLOBAL rows: overall popularity plus **popularity by genre** (cold start).
         sc = s.get("sanity", {})
         if "popularity" in sc:
             parts.append(f"Offline sanity check on this synthetic data ({sc['eval_users']} users, {sc['n_items']} titles; same temporal split; "
-                         "*not a benchmark*):\n\n| Model | recall@10 | NDCG@10 |\n|---|---|---|")
+                         "*not a benchmark*). Every number is near the ceiling and popularity is as good as anything, because a top-10 list "
+                         "covers more than half of a 17-title catalogue, so almost any list contains the held-out title. This is exactly why model "
+                         "quality is measured on MovieLens (section 1) and not here:\n\n| Model | recall@10 | NDCG@10 |\n|---|---|---|")
             for k in ("popularity", "als", "two_tower"):
                 parts.append(f"| {NAMES[k]} | {sc[k]['recall@10']:.3f} | {sc[k]['ndcg@10']:.3f} |")
             parts.append("")
