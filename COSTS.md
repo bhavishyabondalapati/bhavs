@@ -7,12 +7,12 @@ Budget: ~$100 AWS credits, target well under. Alerts at $50 / $80 / $100 actual 
 | Setup / Phase 0 | nothing (read-only CLI calls, 2 tiny Bedrock embedding calls) | ~$0.00 | |
 | Phase 1 | DynamoDB on-demand, Lambda, API GW, Cognito Essentials, Budgets (first 2 budgets free), CloudWatch logs | <$0.50 for the whole phase; ~$0 idle | |
 | Phase 2 | Fargate ARM64 transcode (MediaConvert is blocked), S3 storage, CloudFront | $0.17-$0.43 one-off for the 7 verified films (70 min), ~$0.18/month storage | |
-| Phase 3 | Firehose, Athena, S3 | few $ | |
-| Phase 4 | SageMaker CPU training job | cents per run | |
-| Phase 5 | Bedrock embeddings | pennies | |
-| Phase 6 | CloudWatch dashboard ($3/mo), alarms, load test | few $ | |
+| Phase 3 | SQS, Lambda, Athena, S3 (Firehose is blocked) | few $ | **$2.66 of S3 requests**: see the incident below |
+| Phase 4 | Fargate training job (SageMaker quota is 0) | cents per run | ~$0.001 per run |
+| Phase 5 | Bedrock Titan V2 embeddings | pennies | < $0.01 |
+| Phase 6 | CloudWatch dashboard + 8 alarms (free allowance), X-Ray, load test | $0 idle (else $3.80/mo) | $0 so far |
 
-Idle cost right now: $0.
+Idle cost now: about **$0.45/month (~$0.015/day)**, almost all storage. See "Idle cost (final review)" at the end.
 
 ## Budgets
 - `bhavs-usage` (account-wide, credits excluded): alerts at $50 / $80 / $100 actual. It also counts your other projects in this account.
@@ -26,6 +26,30 @@ Idle cost right now: $0.
 |---|---|---|
 | Phase 1 deploy | 53 resources, all pay-per-use, nothing billing while idle | ~$0.00 |
 | Vercel | Hobby project `bhavs` | $0 |
+
+### Cost Explorer, 2026-11-01 to 2026-11-10 (usage, before credits; Cost Explorer lags ~24 h)
+| Service | Cost | Notes |
+|---|---|---|
+| S3 | $2.66 | 531,855 Tier-1 requests (LIST/PUT); almost all from Athena listing empty folders (incident below). Storage itself is cents. |
+| Claude Haiku 4.5 (Bedrock) | $1.61 | **Not bhavs.** All on 2026-11-06; nothing in this repo calls Haiku. Another workload in this account. |
+| ECS (Fargate) | $0.087 | All transcodes (17 films plus retries) and training runs. Measured BBB alone ~$0.021. |
+| Cost Explorer API | $0.02 | My own cost queries ($0.01 each). |
+| Athena, VPC (public IPv4 for tasks), DynamoDB, EC2, CloudFront, ECR | $0.03 together | |
+| **bhavs total** | **~$2.80** | of the ~$100 credits |
+
+## Incident: Athena made ~530,000 S3 LIST requests ($2.66), fixed 2026-11-10
+- **What happened.** Athena *partition projection* means Athena works out the possible `dt=/hour=` folders from a
+  rule instead of a catalogue. The rule started on 2026-01-01, so every query that did not filter on `dt` made Athena
+  check ~7,500 hour folders (313 days x 24), nearly all empty. Each of the 5 report queries did that, so one report
+  rebuild cost ~37,000 S3 LIST requests (~$0.19). The Phase 3/4 recompaction runs rebuilt the report a dozen times.
+- **How it was found.** The Phase 6 cost review: S3 "Requests-Tier1" was 233k on Nov 9 and 309k on Nov 10. Athena query
+  statistics showed ~5.4 s of *planning* per report query (the listing) for queries that scan under 1 MB.
+- **Fix.** (1) every report query filters `dt >= ?` for the last 30 days (passed as an Athena query parameter, which
+  Athena uses to skip folders); (2) the projection starts at the first day with data (2026-10-31); (3) a scheduled run
+  rebuilds the report at most every 6 hours. A regression test fails if a report query loses its `dt` filter.
+- **After.** Planning dropped to 0.15-0.5 s per query; a full rebuild takes ~9 s instead of 110-165 s. A rebuild now
+  lists ~1,300 folders today, at most ~3,600 once 30 days of data exist (~$0.02), at most 4 times a day.
+- **Lesson.** "Serverless = $0 idle" hides per-request costs. Check request counts, not just storage and compute.
 
 ## Phase 2 decisions and estimates
 - **Compute: Fargate ARM64 (Graviton), Spot first, one on-demand retry.** Verified in AWS docs (ECS API reference
@@ -87,3 +111,29 @@ The speed assumption in the cost model (0.5x-1.5x realtime) was slightly pessimi
   search query (~5 tokens) cost a tiny fraction of a cent; 10,000 searches is about $0.001. Pay per call, **$0 idle**.
 - Index: one 94 KB JSON file in S3 (`search/embeddings.json`), effectively free. No vector database, no OpenSearch.
 - New resources: 1 Lambda (`bhavs-api-search`), 1 IAM role, 1 log group (14-day retention), 1 API route. **$0 idle.**
+
+## Phase 6 (reliability and polish)
+- CloudWatch dashboard `bhavs` + 8 alarms -> SNS email: inside CloudWatch's always-free allowance (3 dashboards, 10
+  alarms; the account had none), so $0. If the allowance does not apply: $3.00 + 8 x $0.10 = **$3.80/month**.
+- X-Ray active tracing on all Lambdas and the transcode state machine: first 100k traces/month free; idle traffic is
+  ~750 traces/month (hourly compaction + weekly training), so $0.
+- SNS email, EventBridge "training failed" rule, security headers (Vercel + CloudFront policy): $0.
+- Load test (`make loadtest`, 20 users x 2 min, ~2,500 requests): < $0.01 per run.
+- GitHub Actions CI: free for public repos.
+
+## Idle cost (final review, 2026-11-10)
+What keeps billing when nobody uses bhavs:
+
+| Item | Size | Monthly |
+|---|---|---|
+| S3 HLS output (17 films, 4 renditions) | 9.2 GB | $0.21 |
+| S3 source uploads (expire 30 days after upload, ~2026-12-09) | 2.3 GB | $0.05 until then |
+| ECR images (transcode + train, lifecycle keeps 3 each) | <= 1.7 GB | <= $0.17 |
+| Hourly compaction run (~4 S3 requests when idle; no Athena) | 720 runs | ~$0.01 |
+| Weekly training on Fargate Spot | 4 runs | ~$0.01 |
+| DynamoDB storage, CloudWatch logs (14-day retention), SSM, Glue, Budgets, Cognito (2 users, Essentials) | < 1 MB each | $0 |
+| CloudWatch dashboard + alarms | 1 + 8 | $0 (free allowance), else $3.80 |
+| **Total** | | **~$0.45/month (~$0.015/day)**, ~$4.25/month without the CloudWatch free allowance |
+
+To stop even that: `make destroy-app` (removes all compute, the dashboard and alarms; keeps data) and, for everything,
+`make destroy-persistent`.

@@ -27,3 +27,5 @@ web/test-results/
 web/blob-report/
 .claude/
 loadtest/results/
+.coverage
+htmlcov/
