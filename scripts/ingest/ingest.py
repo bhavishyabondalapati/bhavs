@@ -59,12 +59,14 @@ def main():
     ap.add_argument("--yes", action="store_true", help="skip the confirmation prompt")
     a = ap.parse_args()
 
-    films = seed_titles.load_films(a.films)
-    if a.only:
-        films = [f for f in films if f["id"] in a.only]
+    all_films = seed_titles.load_films(a.films)
+    films = [f for f in all_films if f["id"] in a.only] if a.only else all_films
     if not Path(a.media_dir).is_dir():
         sys.exit(f"{a.media_dir} does not exist. Run scripts/fetch_films.sh or create it and drop videos in.")
-    matches, unmatched = media.match_files(films, a.media_dir)
+    # Match against the WHOLE catalogue (so a file can't be claimed by the wrong film just because the right one is
+    # filtered out by --only), then keep only the films we were asked for.
+    matches, unmatched = media.match_files(all_films, a.media_dir)
+    matches = {fid: p for fid, p in matches.items() if fid in {f["id"] for f in films}}
     infos = {fid: media.probe(p) for fid, p in matches.items()}
     report(films, matches, unmatched, infos)
     if not matches:

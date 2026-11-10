@@ -237,10 +237,10 @@ films:
     license_url: https://creativecommons.org/licenses/by/4.0/
     credit: "(c) Blender Foundation | blender.org"
     source:
-      url: https://upload.wikimedia.org/wikipedia/commons/a/a9/HERO_-_Blender_Open_Movie-full_movie.webm
+      url: https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a9/HERO_-_Blender_Open_Movie-full_movie.webm/HERO_-_Blender_Open_Movie-full_movie.webm.1080p.vp9.webm
       page: https://commons.wikimedia.org/wiki/File:HERO_-_Blender_Open_Movie-full_movie.webm
       license_at_source: CC BY 4.0
-      size_bytes: 60475168
+      size_bytes: 42787961
       verified: 2026-11-09
   - id: singularity
     title: "Singularity"

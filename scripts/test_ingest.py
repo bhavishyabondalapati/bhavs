@@ -45,3 +45,19 @@ def test_estimate_scales_with_duration():
 
 def test_rate_matches_published_arm_prices():
     assert abs(media.task_rate_per_hour() - (4 * 0.03238 + 8 * 0.00356 + 0.005)) < 1e-12
+
+
+def test_series_name_does_not_steal_a_sibling_file(tmp_path):
+    """Regression: 'Caminandes' (series) must not make caminandes-llamigos.webm match Gran Dillama."""
+    films = [{"id": "caminandes-gran-dillama", "title": "Caminandes: Gran Dillama"},
+             {"id": "caminandes-llamigos", "title": "Caminandes: Llamigos"}]
+    touch(tmp_path, "caminandes-llamigos.webm")
+    touch(tmp_path, "caminandes-gran-dillama.webm")
+    m, _ = media.match_files(films, tmp_path)
+    assert m["caminandes-llamigos"].name == "caminandes-llamigos.webm"
+    assert m["caminandes-gran-dillama"].name == "caminandes-gran-dillama.webm"
+    only_llamigos = {"caminandes-llamigos.webm"}                       # a lone sibling file matches nothing wrong
+    touch(tmp_path / "..", "unused.txt") if False else None
+    (tmp_path / "caminandes-gran-dillama.webm").unlink()
+    m2, un = media.match_files(films, tmp_path)
+    assert set(m2) == {"caminandes-llamigos"} and not un and only_llamigos

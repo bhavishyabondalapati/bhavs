@@ -46,6 +46,8 @@ TSV=$(mktemp); TOTAL=0; OK=0; SKIPPED=0
 printf '%-24s %-9s %s\n' FILM SIZE RESULT
 while IFS='|' read -r id page license urls; do
   [ -z "$id" ] && continue
+  # ONLY="hero coffee-run" limits the run to those films
+  if [ -n "${ONLY:-}" ] && [[ " $ONLY " != *" $id "* ]]; then continue; fi
   picked=""; size=0
   for u in $urls; do
     sleep 1   # be gentle with Wikimedia (they rate-limit aggressive clients)
@@ -62,8 +64,21 @@ while IFS='|' read -r id page license urls; do
   printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$id" "$picked" "$P:$page" "$license" "$size" "$(date +%F)" >> "$TSV"
   if [ "$MODE" = download ]; then
     ext="${picked##*.}"; dest="$OUT/$id.$ext"
-    printf '   downloading -> %s\n' "$dest"
-    curl -L --fail --retry 3 -C - -A "$UA" -o "$dest" "$picked" || echo "   download FAILED for $id"
+    have=$(stat -f%z "$dest" 2>/dev/null || stat -c%s "$dest" 2>/dev/null || echo 0)
+    if [ "$have" = "$size" ]; then
+      echo "   already have $dest (size matches)"
+    else
+      # Never resume into an existing file: a resumed download can silently splice two different versions of a
+      # file into one corrupt file of the right size. Download whole, check the size, then move into place.
+      rm -f "$dest" "$dest.part"
+      printf '   downloading -> %s\n' "$dest"
+      if curl -L --fail --retry 3 -sS -A "$UA" -o "$dest.part" "$picked" \
+         && [ "$(stat -f%z "$dest.part" 2>/dev/null || stat -c%s "$dest.part")" = "$size" ]; then
+        mv "$dest.part" "$dest"
+      else
+        echo "   download FAILED (or wrong size) for $id"; rm -f "$dest.part"
+      fi
+    fi
     sleep 2
   fi
 done <<< "$FILMS"

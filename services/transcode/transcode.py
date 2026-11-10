@@ -45,6 +45,7 @@ def probe(path):
     fps = float(num) / float(den or 1) if float(den or 1) else 0.0
     return {
         "width": int(video["width"]), "height": int(video["height"]), "fps": fps or 24.0,
+        "fps_expr": video.get("avg_frame_rate") if fps else "24/1",
         "duration": float(data["format"]["duration"]),
         "has_audio": any(s["codec_type"] == "audio" for s in data["streams"]),
     }
@@ -63,9 +64,11 @@ def ffmpeg_args(src, out_dir, info, rungs):
     n = len(rungs)
     labels = "".join(f"[v{i}]" for i in range(n))
     chains = ";".join(f"[v{i}]scale={w}:-2:flags=bicubic,format=yuv420p[o{i}]" for i, (_, w, _, _) in enumerate(rungs))
-    head = "fps=30," if info["fps"] > 30.5 else ""
-    graph = f"[0:v]{head}split={n}{labels};{chains}"
-    args = ["ffmpeg", "-hide_banner", "-y", "-i", str(src), "-filter_complex", graph]
+    # Always normalise to constant frame rate first: this regenerates clean, monotonically increasing timestamps
+    # (some real-world files have a few out-of-order packets, which the HLS muxer rejects) and caps >30 fps sources.
+    rate = "30" if info["fps"] > 30.5 else info.get("fps_expr", "24/1")
+    graph = f"[0:v]fps={rate},split={n}{labels};{chains}"
+    args = ["ffmpeg", "-hide_banner", "-y", "-fflags", "+genpts+discardcorrupt", "-i", str(src), "-filter_complex", graph]
     for i, (name, _h, kbps, _lvl) in enumerate(rungs):
         d = Path(out_dir) / name
         d.mkdir(parents=True, exist_ok=True)

@@ -40,3 +40,10 @@ def test_real_films_yaml_still_parses():
     root = Path(__file__).resolve().parent.parent
     text = (root / "films.yaml").read_text()
     assert len(yaml.safe_load(rs.record(text, {}))["films"]) >= 8
+
+
+def test_films_not_in_this_run_keep_their_source():
+    rows = {"a": {"url": "http://u/a", "page": "http://p/a", "license": "L", "size": "1", "date": "d"}}
+    out = rs.record(SAMPLE, rows)          # b is NOT in rows: its existing source block must survive untouched
+    d = yaml.safe_load(out)["films"]
+    assert d[1]["source"]["url"] == "old" and d[0]["source"]["url"] == "http://u/a"

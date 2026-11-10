@@ -32,6 +32,8 @@ def test_ffmpeg_args_one_decode_many_outputs(tmp_path):
     assert args.count("libx264") == 4
     assert "split=4" in args[args.index("-filter_complex") + 1]
     assert "-sc_threshold" in args and "independent_segments" in args
+    assert "fps=24.0" in args[args.index("-filter_complex") + 1] or "fps=24/1" in args[args.index("-filter_complex") + 1]
+    assert "+genpts+discardcorrupt" in args
 
 
 def test_no_audio_source_has_no_audio_maps(tmp_path):

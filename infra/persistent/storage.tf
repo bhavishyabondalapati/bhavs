@@ -174,3 +174,25 @@ resource "aws_s3_bucket_lifecycle_configuration" "analytics" {
     }
   }
 }
+
+# ---- container registry for the recommender training job ----
+resource "aws_ecr_repository" "train" {
+  name                 = "bhavs-train"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}
+
+resource "aws_ecr_lifecycle_policy" "train" {
+  repository = aws_ecr_repository.train.name
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1
+      description  = "keep the 3 newest images"
+      selection    = { tagStatus = "any", countType = "imageCountMoreThan", countNumber = 3 }
+      action       = { type = "expire" }
+    }]
+  })
+}

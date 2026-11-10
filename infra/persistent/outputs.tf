@@ -23,3 +23,5 @@ output "cdn_distribution_id" { value = aws_cloudfront_distribution.cdn.id }
 output "stream_kvs_arn" { value = aws_cloudfront_key_value_store.keys.arn }
 output "analytics_bucket" { value = aws_s3_bucket.analytics.bucket }
 output "analytics_bucket_arn" { value = aws_s3_bucket.analytics.arn }
+output "train_ecr_repository_url" { value = aws_ecr_repository.train.repository_url }
+output "train_ecr_repository_arn" { value = aws_ecr_repository.train.arn }

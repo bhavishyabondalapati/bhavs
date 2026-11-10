@@ -19,10 +19,10 @@ def match_files(films, media_dir):
     """
     files = sorted(p for p in Path(media_dir).glob("*") if p.is_file() and p.suffix.lower() in VIDEO_EXT)
     keys = [(f["id"], norm(f["id"])) for f in films] + [(f["id"], norm(f["title"])) for f in films]
-    # "Caminandes: Llama Drama" is often saved as "Caminandes 3 - Llama Drama", so also try each part
-    # of a title split on ":" (only long parts, to avoid accidental matches).
+    # "Caminandes: Llama Drama" is often saved as "Caminandes 3 - Llama Drama", so also try the SUBTITLE (the part
+    # after the colon). Never the part before it: that is a series name ("Caminandes") shared by several films.
     for f in films:
-        keys += [(f["id"], norm(part)) for part in f["title"].split(":") if len(norm(part)) >= 8]
+        keys += [(f["id"], norm(part)) for part in f["title"].split(":")[1:] if len(norm(part)) >= 8]
     matches, unmatched = {}, []
     for p in files:
         stem = norm(p.stem)

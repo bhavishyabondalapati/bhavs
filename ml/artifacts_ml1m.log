@@ -1,0 +1,36 @@
+ml-1m: 6038 users, 3533 items, 575281 positives (rating>=4); train 563213; evaluating 6034 users  [load 1.1s]
+popularity {'recall@10': np.float64(0.04259197878687438), 'ndcg@10': np.float64(0.02046316604905077), 'users_evaluated': 6034}
+  ALS {'factors': 32, 'reg': 0.05, 'alpha': 10} val recall@10 0.0878 (3s)
+  ALS {'factors': 32, 'reg': 0.05, 'alpha': 40} val recall@10 0.0834 (3s)
+  ALS {'factors': 32, 'reg': 0.5, 'alpha': 10} val recall@10 0.0878 (3s)
+  ALS {'factors': 32, 'reg': 0.5, 'alpha': 40} val recall@10 0.0830 (3s)
+  ALS {'factors': 64, 'reg': 0.05, 'alpha': 10} val recall@10 0.0907 (5s)
+  ALS {'factors': 64, 'reg': 0.05, 'alpha': 40} val recall@10 0.0799 (6s)
+  ALS {'factors': 64, 'reg': 0.5, 'alpha': 10} val recall@10 0.0908 (6s)
+  ALS {'factors': 64, 'reg': 0.5, 'alpha': 40} val recall@10 0.0817 (5s)
+als {'recall@10': np.float64(0.07756049055353), 'ndcg@10': np.float64(0.03969315184581017), 'users_evaluated': 6034}
+  two-tower {'dim': 64, 'lr': 0.001, 'temp': 0.05} val recall@10 0.0961 (56s)
+  two-tower {'dim': 64, 'lr': 0.001, 'temp': 0.1} val recall@10 0.1008 (40s)
+  two-tower {'dim': 64, 'lr': 0.003, 'temp': 0.05} val recall@10 0.1001 (40s)
+  two-tower {'dim': 64, 'lr': 0.003, 'temp': 0.1} val recall@10 0.1021 (36s)
+  two-tower seed 0: test {'recall@10': np.float64(0.08617832283725556), 'ndcg@10': np.float64(0.04118279981882368), 'users_evaluated': 6034}
+  two-tower seed 1: test {'recall@10': np.float64(0.08220086178322837), 'ndcg@10': np.float64(0.04165925812584185), 'users_evaluated': 6034}
+  two-tower seed 2: test {'recall@10': np.float64(0.08452104739807756), 'ndcg@10': np.float64(0.04266356796436466), 'users_evaluated': 6034}
+{
+ "popularity": {
+  "recall@10": 0.04259197878687438,
+  "ndcg@10": 0.02046316604905077,
+  "users_evaluated": 6034
+ },
+ "als": {
+  "recall@10": 0.07756049055353,
+  "ndcg@10": 0.03969315184581017,
+  "users_evaluated": 6034
+ },
+ "two_tower": {
+  "recall@10": 0.0843000773395205,
+  "ndcg@10": 0.04183520863634339,
+  "users_evaluated": 6034
+ }
+}
+total 394s

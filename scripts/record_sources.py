@@ -22,10 +22,10 @@ def record(text, rows):
             # drop any previous source: block (the key line plus its deeper-indented children)
             cleaned, skipping = [], False
             for b in block:
-                if b.startswith("    source:"):
+                if fid in rows and b.startswith("    source:"):
                     skipping = True
                     continue
-                if skipping and (b.startswith("      ") or b.strip() == ""):
+                if skipping and fid in rows and (b.startswith("      ") or b.strip() == ""):
                     continue
                 skipping = False
                 cleaned.append(b)
