@@ -163,7 +163,11 @@ resource "aws_lambda_function" "fn" {
     }, each.value.env)
   }
 
-  depends_on = [aws_cloudwatch_log_group.fn, aws_iam_role_policy.fn]
+  tracing_config {
+    mode = "Active"
+  }
+
+  depends_on = [aws_cloudwatch_log_group.fn, aws_iam_role_policy.fn, aws_iam_role_policy_attachment.xray]
 }
 
 resource "aws_apigatewayv2_api" "http" {

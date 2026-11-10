@@ -24,8 +24,9 @@ deploy-persistent: ## Plan, then (after you confirm) apply the persistent stack
 	cd infra/persistent && $(INIT) && $(TF) plan -out=tfplan && \
 	  read -p "Apply persistent plan? [y/N] " a && [ "$$a" = y ] && $(TF) apply tfplan
 
-deploy-app: ## Plan, then (after you confirm) apply the app stack
-	cd infra/app && $(INIT) && $(TF) plan -out=tfplan && \
+deploy-app: ## Plan, then (after you confirm) apply the app stack (alarm email read from .env, never committed)
+	cd infra/app && $(INIT) && export TF_VAR_alert_email=$$(grep -s '^BUDGET_ALERT_EMAIL=' ../../.env | cut -d= -f2-) && \
+	  $(TF) plan -out=tfplan && \
 	  read -p "Apply app plan? [y/N] " a && [ "$$a" = y ] && $(TF) apply tfplan
 
 destroy-app: ## Destroy the app stack (safe, recreatable)
@@ -92,3 +93,13 @@ embed: ## Build the semantic search index (Bedrock Titan V2 embeddings of READY 
 
 search-eval: ## Evaluate search on ml/search_eval.yaml: vector-only vs hybrid (hit@3, MRR) -> ml/SEARCH_EVAL.md
 	python ml/search_eval.py --report --json ml/artifacts/search_eval.json
+
+e2e: ## Signed-out E2E checks (pages, redirects, security headers). URL=https://bhavs.vercel.app or a local server on :3100
+	cd web && E2E_BASE_URL=$(or $(URL),http://localhost:3100) npx playwright test --project=public
+
+e2e-journey: ## Full journey login->browse->search->play->resume with the test account from .env (uses Google Chrome)
+	set -a && . ./.env && set +a && cd web && E2E_BASE_URL=$(or $(URL),https://bhavs.vercel.app) npx playwright test --project=journey
+
+loadtest: ## Load test the real API with Locust (test account from .env). USERS/MINUTES optional. ~1 cent.
+	set -a && . ./.env && set +a && locust -f loadtest/locustfile.py --headless -u $(or $(USERS),20) -r 5 \
+	  -t $(or $(MINUTES),2)m --host $$(terraform -chdir=infra/app output -raw api_url) --csv loadtest/results/run

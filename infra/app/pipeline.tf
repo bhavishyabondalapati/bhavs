@@ -96,7 +96,11 @@ resource "aws_lambda_function" "start" {
       STATE_MACHINE_ARN = aws_sfn_state_machine.transcode.arn
     }
   }
-  depends_on = [aws_cloudwatch_log_group.start, aws_iam_role_policy.start]
+  tracing_config {
+    mode = "Active"
+  }
+
+  depends_on = [aws_cloudwatch_log_group.start, aws_iam_role_policy.start, aws_iam_role_policy_attachment.xray]
 }
 
 resource "aws_iam_role" "pipeline" {
@@ -142,7 +146,11 @@ resource "aws_lambda_function" "pipeline" {
   environment {
     variables = merge({ TITLES_TABLE = local.p.titles_table }, each.value.env)
   }
-  depends_on = [aws_cloudwatch_log_group.pipeline, aws_iam_role_policy.pipeline]
+  tracing_config {
+    mode = "Active"
+  }
+
+  depends_on = [aws_cloudwatch_log_group.pipeline, aws_iam_role_policy.pipeline, aws_iam_role_policy_attachment.xray]
 }
 
 # ---------- Fargate transcoder ----------
@@ -393,6 +401,12 @@ resource "aws_sfn_state_machine" "transcode" {
       }
     }
   })
+
+  tracing_configuration {
+    enabled = true
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.xray]
 }
 
 # ---------- EventBridge: S3 upload -> start ----------

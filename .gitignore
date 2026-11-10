@@ -22,3 +22,8 @@ tfplan
 .playwright-mcp/
 ml/data/
 ml/artifacts/
+web/playwright-report/
+web/test-results/
+web/blob-report/
+.claude/
+loadtest/results/

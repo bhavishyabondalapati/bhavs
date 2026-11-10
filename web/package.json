@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "e2e": "playwright test --project=public",
+    "e2e:journey": "playwright test --project=journey"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.1164.0",
@@ -16,6 +18,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

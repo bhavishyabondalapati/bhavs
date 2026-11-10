@@ -69,7 +69,11 @@ resource "aws_lambda_function" "events_batch" {
   environment {
     variables = { ANALYTICS_BUCKET = local.lake }
   }
-  depends_on = [aws_cloudwatch_log_group.events_batch, aws_iam_role_policy.events_batch]
+  tracing_config {
+    mode = "Active"
+  }
+
+  depends_on = [aws_cloudwatch_log_group.events_batch, aws_iam_role_policy.events_batch, aws_iam_role_policy_attachment.xray]
 }
 
 resource "aws_lambda_event_source_mapping" "events" {
@@ -267,7 +271,11 @@ resource "aws_lambda_function" "compact" {
   environment {
     variables = { ANALYTICS_BUCKET = local.lake, WORKGROUP = aws_athena_workgroup.bhavs.name }
   }
-  depends_on = [aws_cloudwatch_log_group.compact, aws_iam_role_policy.compact]
+  tracing_config {
+    mode = "Active"
+  }
+
+  depends_on = [aws_cloudwatch_log_group.compact, aws_iam_role_policy.compact, aws_iam_role_policy_attachment.xray]
 }
 
 data "aws_iam_policy_document" "assume_scheduler" {
