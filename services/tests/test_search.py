@@ -94,3 +94,33 @@ def test_bm25_stemming_and_stopwords():
     items = [{"id": "a", "title": "A", "text": "robot war"}, {"id": "b", "title": "B", "text": "quiet garden"}]
     assert set(textsearch.bm25_scores("robots", items)) == {"a"}
     assert textsearch.bm25_scores("the and of", items) == {}
+
+
+def test_titan_request_shape(monkeypatch):
+    """The exact body sent to Bedrock: 256 dims, normalised, Titan V2 model id."""
+    import io
+
+    sent = {}
+
+    class FakeBedrock:
+        def invoke_model(self, **kw):
+            sent.update(kw)
+            return {"body": io.BytesIO(json.dumps({"embedding": [0.6, 0.8]}).encode())}
+
+    monkeypatch.setattr(embed, "_client", FakeBedrock())
+    assert embed.embed("a dragon") == [0.6, 0.8]
+    assert sent["modelId"] == "amazon.titan-embed-text-v2:0"
+    assert json.loads(sent["body"]) == {"inputText": "a dragon", "dimensions": 256, "normalize": True}
+
+
+def test_indexed_text_includes_name_genres_and_description():
+    t = {"title": "Sintel", "genres": ["fantasy", "adventure"], "description": "A lone warrior."}
+    assert embed.title_text(t) == "Sintel. Genres: fantasy, adventure. A lone warrior."
+    assert embed.keyword_text(t) == "Genres: fantasy, adventure. A lone warrior."
+
+
+def test_vector_only_baseline_applies_floor_and_relative_cutoff():
+    items = [{"id": "a", "title": "A", "vector": [1.0, 0.0]}, {"id": "b", "title": "B", "vector": [0.6, 0.8]},
+             {"id": "c", "title": "C", "vector": [0.0, 1.0]}]
+    assert [i for _, i in search.rank_vector("zz", items, [1.0, 0.0])] == ["a"]  # b scores 0.6 < 0.75 x best
+    assert search.rank_vector("zz", items, [0.1, 0.0]) == []                    # everything under the floor

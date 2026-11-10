@@ -8,7 +8,7 @@ TF := terraform
 INIT = export TF_VAR_state_bucket=bhavs-tfstate-$$(aws sts get-caller-identity --query Account --output text) && \
   $(TF) init -input=false -backend-config="bucket=$$TF_VAR_state_bucket" >/dev/null
 
-.PHONY: search-eval embed ml-benchmark train train-dry build-train train-cloud simulate simulate-purge analytics-refresh fetch-films estimate ingest transcode-local build-transcode stream-key seed-titles help check-access bootstrap deploy-persistent deploy-app destroy-app destroy-persistent test lint
+.PHONY: e2e e2e-journey loadtest search-eval embed ml-benchmark train train-dry build-train train-cloud simulate simulate-purge analytics-refresh fetch-films estimate ingest transcode-local build-transcode stream-key seed-titles help check-access bootstrap deploy-persistent deploy-app destroy-app destroy-persistent test lint
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  %-20s %s\n", $$1, $$2}'
@@ -100,6 +100,8 @@ e2e: ## Signed-out E2E checks (pages, redirects, security headers). URL=https://
 e2e-journey: ## Full journey login->browse->search->play->resume with the test account from .env (uses Google Chrome)
 	set -a && . ./.env && set +a && cd web && E2E_BASE_URL=$(or $(URL),https://bhavs.vercel.app) npx playwright test --project=journey
 
-loadtest: ## Load test the real API with Locust (test account from .env). USERS/MINUTES optional. ~1 cent.
-	set -a && . ./.env && set +a && locust -f loadtest/locustfile.py --headless -u $(or $(USERS),20) -r 5 \
+loadtest: ## Load test the real API with Locust (test account from .env). USERS/MINUTES optional. Under 1 cent.
+	mkdir -p loadtest/results && set -a && . ./.env && set +a && \
+	  export BHAVS_COGNITO_CLIENT_ID=$$(terraform -chdir=infra/persistent output -raw user_pool_client_id) && \
+	  locust -f loadtest/locustfile.py --headless -u $(or $(USERS),20) -r 5 \
 	  -t $(or $(MINUTES),2)m --host $$(terraform -chdir=infra/app output -raw api_url) --csv loadtest/results/run
