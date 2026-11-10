@@ -1,10 +1,10 @@
 # Recommender training job. SageMaker training is unavailable (ml.m5.large quota = 0, request still pending),
 # so the SAME container runs as a Fargate task. Triggered weekly by EventBridge Scheduler and by `make train-cloud`.
-# The schedule is created DISABLED: enable it (var.train_schedule_enabled) after the first manual run is approved.
+# The schedule was created DISABLED and enabled after the first manual cloud run was verified (2026-11-09).
 
 variable "train_schedule_enabled" {
   type    = bool
-  default = false
+  default = true
 }
 
 resource "aws_cloudwatch_log_group" "train" {

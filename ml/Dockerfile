@@ -6,6 +6,6 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 WORKDIR /app
 COPY bhavs_rec /app/bhavs_rec
 COPY train.py best_model.txt /app/
-RUN useradd -m runner
+RUN useradd -m runner && mkdir /app/artifacts && chown runner /app/artifacts
 USER runner
 CMD ["python", "train.py", "--model", "auto"]

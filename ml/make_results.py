@@ -62,7 +62,11 @@ once. **The bar to beat is the popularity baseline** (same list for everyone).
             sc = r["models"][key]["test"]["recall@10"]
             if sc > best_score + 1e-12 and r["users"] >= 5000:
                 best_name, best_score = key, sc
-    parts.append(f"**Model used for production rows:** `{best_name}` (best recall@10 on the largest dataset run).\n")
+    parts.append(
+        "**How to read this.** Both learned models (ALS and the two-tower) beat the popularity baseline by roughly 2x on "
+        "ML-1M. The difference *between* ALS and the two-tower is within the 95% confidence interval, so this benchmark does "
+        "**not** show that one is better than the other. The production job uses `" + best_name + "` only because it has the "
+        "higher point estimate on the largest dataset run (a tie-break, not a finding); ALS would serve equally well.\n")
     (HERE / "best_model.txt").write_text(best_name + "\n")
 
     parts.append("## 2. bhavs production run (live rows on the website)\n")

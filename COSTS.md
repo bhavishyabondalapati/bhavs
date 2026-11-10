@@ -73,7 +73,11 @@ The speed assumption in the cost model (0.5x-1.5x realtime) was slightly pessimi
 
 ## Phase 4 (recommendations)
 - **Local (free):** the MovieLens benchmark (small + 1M) runs on the Mac (Apple GPU via `mps`): ~6.5 min for ml-1m.
-- **Cloud training job** (not yet run): Fargate ARM64, **2 vCPU / 4 GB** (SageMaker `ml.m5.large` quota is 0, request still
+- **Cloud training job** (run 2026-11-09, Fargate Spot ARM64): Fargate ARM64, **2 vCPU / 4 GB** (SageMaker `ml.m5.large` quota is 0, request still
   `CASE_OPENED`). Price: 2 x $0.03238 + 4 x $0.00356 + $0.005 (IPv4) = **$0.084/hour** on-demand. A run is ~3 min including
   the ~1.6 GB image pull, so **~$0.004 per run on-demand** (Spot cheaper). Weekly = ~$0.02/month.
-- ECR `bhavs-train` image (CPU PyTorch, ~0.5 GB compressed): ~$0.05/month. Weekly schedule exists but is **DISABLED**.
+- ECR `bhavs-train` image (CPU PyTorch, ~0.5 GB compressed): ~$0.05/month. Weekly schedule (Sundays 06:00 UTC) is **ENABLED** (~$0.02/month).
+- First cloud run: attempt 1 trained fine but crashed writing a local summary file (read-only dir in the container; no
+  rows written). Fixed, image rebuilt, attempt 2 exited 0 in about 1 minute of task time (~$0.001 on-demand-equivalent each).
+  Cloud rows matched the local run (746 rows; one adjacent swap in a top-4 list from CPU vs Apple-GPU float differences).
+- SageMaker `ml.m5.large` quota case is left open. Fargate is the documented training path; SageMaker is optional if approved.

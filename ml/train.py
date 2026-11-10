@@ -103,8 +103,11 @@ def main():
 
     summary = {"model": name, "users": inter.n_users, "titles": inter.n_items, "interactions": len(inter.users),
                "rows": total, "sanity": sanity, "seconds": round(time.time() - t0, 1), "generated_at": int(now)}
-    (HERE / "artifacts").mkdir(exist_ok=True)
-    (HERE / "artifacts" / "bhavs-run.json").write_text(json.dumps(summary, indent=2, default=float))
+    try:  # a local copy of the run summary is nice to have, never worth failing the job (read-only dirs in containers)
+        (HERE / "artifacts").mkdir(exist_ok=True)
+        (HERE / "artifacts" / "bhavs-run.json").write_text(json.dumps(summary, indent=2, default=float))
+    except OSError as e:
+        print(f"note: could not write local run summary ({e}); continuing", flush=True)
     if a.dry_run:
         return
     if os.environ.get("RESULTS_BUCKET"):
