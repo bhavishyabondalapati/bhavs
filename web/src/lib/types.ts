@@ -15,3 +15,4 @@ export type Title = {
 export type ContinueItem = { title: Title; position: number; duration?: number; updated_at?: number };
 export type RecRow = { key: string; label: string; titles: Title[] };
 export type Me = { user_id: string; email: string; groups: string[]; is_admin: boolean };
+export type SearchResult = Title & { score: number };

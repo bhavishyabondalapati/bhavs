@@ -70,6 +70,19 @@ locals {
         { actions = ["s3:GetObject"], resources = ["${local.p.analytics_bucket_arn}/reports/*"] },
       ]
     }
+    search = {
+      route   = "GET /search"
+      handler = "api.search.handler"
+      env = {
+        ANALYTICS_BUCKET = local.p.analytics_bucket
+        EMBEDDINGS_KEY   = "search/embeddings.json"
+      }
+      access = [
+        { actions = ["s3:GetObject"], resources = ["${local.p.analytics_bucket_arn}/search/*"] },
+        { actions = ["dynamodb:BatchGetItem"], resources = [local.p.titles_table_arn] },
+        { actions = ["bedrock:InvokeModel"], resources = ["arn:aws:bedrock:us-east-2::foundation-model/amazon.titan-embed-text-v2:0"] },
+      ]
+    }
     events = {
       route   = "POST /events"
       handler = "api.events.handler"

@@ -8,7 +8,7 @@ TF := terraform
 INIT = export TF_VAR_state_bucket=bhavs-tfstate-$$(aws sts get-caller-identity --query Account --output text) && \
   $(TF) init -input=false -backend-config="bucket=$$TF_VAR_state_bucket" >/dev/null
 
-.PHONY: ml-benchmark train train-dry build-train train-cloud simulate simulate-purge analytics-refresh fetch-films estimate ingest transcode-local build-transcode stream-key seed-titles help check-access bootstrap deploy-persistent deploy-app destroy-app destroy-persistent test lint
+.PHONY: embed ml-benchmark train train-dry build-train train-cloud simulate simulate-purge analytics-refresh fetch-films estimate ingest transcode-local build-transcode stream-key seed-titles help check-access bootstrap deploy-persistent deploy-app destroy-app destroy-persistent test lint
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk -F':.*?## ' '{printf "  %-20s %s\n", $$1, $$2}'
@@ -86,3 +86,6 @@ build-train: ## Build + push the ARM64 training image to ECR
 
 train-cloud: ## Run the training job ONCE on Fargate (cents)
 	./scripts/train_cloud.sh
+
+embed: ## Build the semantic search index (Bedrock Titan V2 embeddings of READY titles -> S3). Fraction of a cent.
+	python scripts/embed_titles.py

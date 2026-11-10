@@ -81,3 +81,9 @@ The speed assumption in the cost model (0.5x-1.5x realtime) was slightly pessimi
   rows written). Fixed, image rebuilt, attempt 2 exited 0 in about 1 minute of task time (~$0.001 on-demand-equivalent each).
   Cloud rows matched the local run (746 rows; one adjacent swap in a top-4 list from CPU vs Apple-GPU float differences).
 - SageMaker `ml.m5.large` quota case is left open. Fargate is the documented training path; SageMaker is optional if approved.
+
+## Phase 5 (semantic search)
+- **Bedrock Titan Text Embeddings V2** (256 dims): $0.00002 per 1K input tokens. Indexing 17 titles (~1K tokens) and each
+  search query (~5 tokens) cost a tiny fraction of a cent; 10,000 searches is about $0.001. Pay per call, **$0 idle**.
+- Index: one 94 KB JSON file in S3 (`search/embeddings.json`), effectively free. No vector database, no OpenSearch.
+- New resources: 1 Lambda (`bhavs-api-search`), 1 IAM role, 1 log group (14-day retention), 1 API route. **$0 idle.**
