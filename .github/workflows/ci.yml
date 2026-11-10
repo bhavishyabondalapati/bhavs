@@ -36,7 +36,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: testing
 
   web:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is 26.04, which Playwright 1.56 cannot install Chromium on. Unpin after upgrading Playwright.
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: web
