@@ -29,3 +29,7 @@ web/blob-report/
 loadtest/results/
 .coverage
 htmlcov/
+
+# agent instruction files (Next.js re-creates AGENTS.md on `next dev`)
+AGENTS.md
+CLAUDE.md
