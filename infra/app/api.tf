@@ -230,6 +230,14 @@ resource "aws_apigatewayv2_stage" "default" {
     throttling_burst_limit = 50
     throttling_rate_limit  = 25
   }
+
+  # Search is the one route that calls a paid API (a Bedrock embedding per new query), so it gets a
+  # tighter limit of its own. Like the default above it is shared by all users, not per user.
+  route_settings {
+    route_key              = aws_apigatewayv2_route.fn["search"].route_key
+    throttling_burst_limit = 10
+    throttling_rate_limit  = 5
+  }
 }
 
 output "api_url" { value = aws_apigatewayv2_api.http.api_endpoint }
