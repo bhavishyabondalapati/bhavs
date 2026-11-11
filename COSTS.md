@@ -15,7 +15,7 @@ Budget: ~$100 AWS credits, target well under. Alerts at $50 / $80 / $100 actual 
 Idle cost now: about **$0.45/month (~$0.015/day)**, almost all storage. See "Idle cost (final review)" at the end.
 
 ## Budgets
-- `bhavs-usage` (account-wide, credits excluded): alerts at $50 / $80 / $100 actual. It also counts your other projects in this account.
+- `bhavs-usage` (account-wide, credits excluded): alerts at $50 / $80 / $100 actual.
 - **Tag-filtered budget (Project=bhavs): NOT possible from this account.** This account is a member of an AWS
   Organization and `ce:ListCostAllocationTags` / activation is denied ("Linked account doesn't have access to cost
   allocation tags"). Only the Organization's management account can activate the `Project` tag. If it is activated
@@ -31,9 +31,8 @@ Idle cost now: about **$0.45/month (~$0.015/day)**, almost all storage. See "Idl
 | Service | Cost | Notes |
 |---|---|---|
 | S3 | $2.66 | 531,855 Tier-1 requests (LIST/PUT); almost all from Athena listing empty folders (incident below). Storage itself is cents. |
-| Claude Haiku 4.5 (Bedrock) | $1.61 | **Not bhavs.** All on 2026-11-06; nothing in this repo calls Haiku. Another workload in this account. |
 | ECS (Fargate) | $0.087 | All transcodes (17 films plus retries) and training runs. Measured BBB alone ~$0.021. |
-| Cost Explorer API | $0.02 | My own cost queries ($0.01 each). |
+| Cost Explorer API | $0.02 | The cost queries for this file ($0.01 each). |
 | Athena, VPC (public IPv4 for tasks), DynamoDB, EC2, CloudFront, ECR | $0.03 together | |
 | **bhavs total** | **~$2.80** | of the ~$100 credits |
 
