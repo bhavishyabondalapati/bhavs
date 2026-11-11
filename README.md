@@ -9,7 +9,9 @@ $0.45/month.
 **Live:** https://bhavs.vercel.app (sign-up needs an email confirmation code). Architecture: [docs/architecture.md](docs/architecture.md).
 Costs: [COSTS.md](COSTS.md). ML results: [ml/RESULTS.md](ml/RESULTS.md). Search eval: [ml/SEARCH_EVAL.md](ml/SEARCH_EVAL.md).
 
-## 1. What it does
+<!-- Demo slot: add a short screen recording or GIF here, e.g. ![bhavs demo](docs/demo.gif) -->
+
+## What it does
 - **Watch:** Cognito sign-up/sign-in; browse rows (Continue watching, Top picks, Because you watched X, genres); a
   player that switches between 360p and 1080p with your bandwidth and resumes where you left off.
 - **Upload -> stream automatically:** drop a film in S3 and Step Functions transcodes it on Fargate into a 4-rung HLS
@@ -17,7 +19,7 @@ Costs: [COSTS.md](COSTS.md). ML results: [ml/RESULTS.md](ml/RESULTS.md). Search 
 - **Learn from viewing:** playback events flow to an S3 data lake, are compacted hourly to Parquet, and power an
   admin analytics page (views, watch %, drop-off, bitrates) and a weekly recommender training job.
 
-## 2. Tools and libraries, and why
+## Tools and libraries, and why
 | Tool | Why |
 |---|---|
 | **Terraform** (3 stacks, S3 state with native locking) | Everything is code; the compute stack can be destroyed and rebuilt without touching data. |
@@ -33,18 +35,19 @@ Costs: [COSTS.md](COSTS.md). ML results: [ml/RESULTS.md](ml/RESULTS.md). Search 
 | **CloudWatch, X-Ray, SNS** | Dashboard, alarms emailed to you, request traces; inside the free allowance. |
 | **pytest + moto, Playwright, Locust, ruff, GitHub Actions** | Unit tests with faked AWS, browser E2E, load testing, linting, CI. |
 
-## 3. File structure
+## File structure
 ```
 .env.example                  placeholder settings (copy to .env, never commit .env)
 .github/workflows/ci.yml      CI: ruff + pytest, web lint/typecheck/build + signed-out E2E, terraform fmt/validate
 .gitignore                    keeps secrets, data, builds and test output out of git
 COSTS.md                      every estimate, measured cost, the Athena cost incident, and idle cost
+LICENSE                       MIT license for the code
 Makefile                      all commands (make help)
 README.md                     this file
 films.yaml                    the 17 films: metadata, licences, verified download sources
 pytest.ini / ruff.toml        test paths / lint settings
 requirements.txt              Python packages for scripts and tests
-docs/ACCESS.md                Phase 0 account checks and the fallbacks for blocked services
+docs/ACCESS.md                service constraints in the AWS account used, and the fallback chosen for each
 docs/architecture.md          architecture diagram and design reasons
 
 infra/bootstrap/main.tf       Terraform state bucket (versioned, encrypted)
@@ -95,7 +98,7 @@ services/tests/test_analytics.py    event batching, partitions, admin endpoint
 services/tests/test_compact.py      compaction + report rebuild with a fake Athena (incl. cost regression guard)
 services/tests/test_search.py       search ranking, BM25, Bedrock request shape
 
-scripts/check_access.sh       Phase 0: checks every AWS service bhavs needs
+scripts/check_access.sh       checks every AWS service bhavs needs (see docs/ACCESS.md)
 scripts/fetch_films.sh        verifies (and downloads) the open films from Wikimedia Commons
 scripts/record_sources.py     writes verified sources into films.yaml
 scripts/seed_titles.py        loads films.yaml into DynamoDB
@@ -146,14 +149,14 @@ web/src/app/api/auth/*        sign-up, confirm, login, logout route handlers (se
 web/src/app/api/session/refresh/route.ts  refreshes tokens, then returns to the page
 web/src/app/api/bhavs/[...path]/route.ts  allow-listed proxy from the browser to the API
 web/src/components/*.tsx      Header (with search), Row, TitleCard, Poster, Player (hls.js), AuthForm, SignOutButton
-web/src/lib/*.ts              Cognito calls, session cookies, server API client, types, event sender
+web/src/lib/*.ts              Cognito calls, session cookies, auth rate limiter, server API client, types, event sender
 web/e2e/public.spec.ts        signed-out E2E: pages, redirects, security headers, proxy guard
 web/e2e/journey.spec.ts       full E2E: login -> browse -> search -> play -> resume
 web/playwright.config.ts      Playwright projects
 web/vercel.json               Vercel region (Cleveland, next to us-east-2)
 ```
 
-## 4. Setup
+## Setup
 ```bash
 conda create -n bhavs python=3.12 -y
 conda activate bhavs
@@ -172,7 +175,7 @@ make fetch-films DOWNLOAD=1 && make ingest   # downloads and transcodes the film
 make embed                                   # search index
 ```
 
-## 5. How to run
+## How to run
 - **Website:** https://bhavs.vercel.app, or locally: `cd web && npm run dev` (needs `web/.env.local` from `web/.env.example`).
 - **Tests:** `make test` (81 Python tests, AWS faked with moto), `make lint`, `cd web && npm run lint`.
 - **E2E:** `make e2e URL=https://bhavs.vercel.app` (signed out, no secrets) and `make e2e-journey` (test account from .env).
@@ -182,7 +185,7 @@ make embed                                   # search index
 - **Monitoring:** `terraform -chdir=infra/app output -raw dashboard_url`.
 - **Tear down:** `make destroy-app` (compute only, data kept); `make destroy-persistent` (everything, asks for a phrase).
 
-## 6. How it was built
+## How it was built
 0. **Account check:** found MediaConvert, Firehose, Kinesis and cost-allocation tags blocked by the Organization; picked fallbacks.
 1. **Foundation:** Terraform state, Cognito, DynamoDB, API Gateway + Lambdas, Next.js on Vercel with cookie auth.
 2. **Video pipeline:** ffmpeg container on Fargate Spot ARM64, Step Functions with on-demand retry and DLQ, CloudFront
@@ -195,7 +198,7 @@ make embed                                   # search index
 6. **Reliability:** dashboard, alarms, X-Ray, CSP + security headers, Playwright E2E, Locust, CI, more unit tests, and
    a cost review that found and fixed an Athena request-cost bug.
 
-## 7. Key concepts (interview notes)
+## Key concepts
 - **Adaptive bitrate (HLS):** the film is cut into 6-second segments at 4 qualities; the player measures bandwidth and
   picks a quality per segment. Measured on the live site: 360p -> 1080p in ~10 s, and down to 360p within ~1 s of
   throttling to 1 Mbit/s.
@@ -214,7 +217,8 @@ make embed                                   # search index
   without comparing incompatible scores. Evaluated with a dev/test split so the one tuned value was not fitted to the test.
 - **Least privilege:** one IAM role per Lambda with only its table/prefix/model; secrets in SSM, never in code or state.
 - **Defence in depth on the web:** httpOnly cookies, an allow-listed proxy, nonce-based CSP with `strict-dynamic`,
-  `frame-ancestors 'none'`, HSTS.
+  `frame-ancestors 'none'`, HSTS, rate-limited login / sign-up / confirm routes, and API throttling with a tighter
+  limit on search (the one route that calls a paid API).
 
 ## Results
 **MovieLens ml-1m** (6,034 users, temporal leave-last-out, full ranking; [ml/RESULTS.md](ml/RESULTS.md)):
@@ -259,20 +263,16 @@ function even when idle, which this project avoids.
 **Video:** 17 films, 4 renditions each (9.2 GB), all READY; Big Buck Bunny transcode 7m42s on Fargate Spot (~$0.02).
 **Cost so far:** ~$2.80 of usage for bhavs (COSTS.md), idle ~$0.45/month.
 
-## Demo checklist (screen recording)
-1. Sign in at bhavs.vercel.app; show the rows (Continue watching, Top picks, Because you watched X).
-2. Search "a lonely dragon" -> Sintel; "stubborn fence" -> Llama Drama; "cooking pasta recipe" -> nothing.
-3. Play a film; open the quality menu; in DevTools throttle to "Fast 3G" and watch it drop to 360p, then recover.
-4. Stop mid-film, go back to browse: it is in Continue watching; reopen it: "Resuming from m:ss".
-5. DevTools Network: a segment URL contains `/t/<expiry>-<signature>/`; change one character -> 403 from CloudFront.
-6. Admin account: the analytics page (views, watch %, drop-off heatmap, bitrate mix) with the synthetic-data banner.
-7. AWS console: upload a film to the source bucket -> the Step Functions execution graph -> title turns READY.
-8. CloudWatch dashboard `bhavs` and an X-Ray trace of a search request; `make loadtest` output with p50/p95.
-9. GitHub Actions run passing; `ml/RESULTS.md` table.
-
 ## Credits and licences
 - Films: Blender Foundation / Blender Studio open movies under Creative Commons (each film's licence and credit are in
   `films.yaml` and shown on its page). Downloaded from Wikimedia Commons.
 - MovieLens data: F. Maxwell Harper and Joseph A. Konstan, *The MovieLens Datasets: History and Context*, ACM TiiS 5(4),
   2015, from [GroupLens](https://grouplens.org/datasets/movielens/). Used for research only and not redistributed
   (`ml/data/` is gitignored).
+
+## License
+
+The code in this repository is released under the [MIT License](LICENSE). Copyright (c) 2026 Bhavishya Bondalapati.
+
+MIT covers the code only. The films keep their own Creative Commons licences (listed per film in `films.yaml`) and the
+MovieLens data keeps the GroupLens terms; neither is stored in this repository.
