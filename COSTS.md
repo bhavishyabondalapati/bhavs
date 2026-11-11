@@ -118,8 +118,16 @@ The speed assumption in the cost model (0.5x-1.5x realtime) was slightly pessimi
 - X-Ray active tracing on all Lambdas and the transcode state machine: first 100k traces/month free; idle traffic is
   ~750 traces/month (hourly compaction + weekly training), so $0.
 - SNS email, EventBridge "training failed" rule, security headers (Vercel + CloudFront policy): $0.
-- Load test (`make loadtest`, 20 users x 2 min, ~2,500 requests): < $0.01 per run.
+- Load test (`make loadtest`, 20 users x 2 min, ~2,500 requests): < $0.01 per run. Measured 2026-11-10: 2,623
+  requests, 0 failures (~$0.004 by the price list: API Gateway $0.0026 + Lambda ~$0.001 + Bedrock/DynamoDB fractions).
 - GitHub Actions CI: free for public repos.
+
+### Resolved: `bhavs-transcode-dlq` alarm (2026-11-10)
+- The alarm fired as soon as it was created because the transcode DLQ held 2 records from 2026-11-10 00:09 and 00:19
+  UTC: both Hero attempts that failed on the corrupted download (see "Catalogue transcodes" above).
+- Hero was re-fetched, re-transcoded and has been READY since, so the records were stale. Both were deleted (only those
+  2, matched by title and time; no purge), the queue is empty, and the alarm returned to OK.
+- Cost: $0 (SQS requests are free at this volume). The alarm did what it should: it surfaced real failures.
 
 ## Idle cost (final review, 2026-11-10)
 What keeps billing when nobody uses bhavs:

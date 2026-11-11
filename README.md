@@ -232,6 +232,30 @@ confidence interval, so neither is claimed to be better; production uses the two
 MRR 0.864 vs vector-only 0.636 / 0.492, with the same 4/5 "should return nothing" queries correctly empty. Small,
 self-labelled set: a sanity check, not a benchmark.
 
+**End-to-end (Playwright, production, 2026-11-10):** the full journey passed (sign in, browse, search "a lonely
+dragon", play Sintel through the token-checked CDN, pause, resume from the saved position), and all 9 signed-out
+checks (redirects, admin hidden, security headers, CSP nonce, API proxy guard) passed, locally, in CI and on production.
+
+**Load test** (Locust, 20 simulated viewers for 2 minutes against the real API, 2026-11-10; `make loadtest`):
+
+| Endpoint | Requests | p50 | p95 | p99 | Max |
+|---|---|---|---|---|---|
+| `GET /titles` | 753 | 72 ms | 100 ms | 250 ms | 1.1 s |
+| `GET /me/continue-watching` | 533 | 74 ms | 95 ms | 140 ms | 0.9 s |
+| `GET /me/recommendations` | 533 | 160 ms | 200 ms | 330 ms | 1.3 s |
+| `GET /search` | 323 | 65 ms | 170 ms | 330 ms | 2.4 s |
+| `GET /titles/{id}` | 324 | 66 ms | 88 ms | 200 ms | 0.2 s |
+| `GET /titles/{id}/stream` | 157 | 64 ms | 84 ms | 250 ms | 1.4 s |
+| **All** | **2,623** | **74 ms** | **170 ms** | **250 ms** | **2.4 s** |
+
+0 failures at ~22 requests/s (just under the API's 25 rps throttle). **The max values are Lambda cold starts**: the
+Lambda logs show 7 cold starts in 2,625 invocations, when a burst needed a new instance of a function. Starting the
+Python runtime took ~180-270 ms. Most of the delay is the first request on the new instance, which creates the AWS SDK
+clients and opens connections; for search it also loads the index from S3 and makes the first Bedrock call (2.05 s in
+total inside Lambda, 2.4 s as Locust measured it). Warm requests spend 13-29 ms in the handler (114 ms for
+recommendations, which reads two tables). Provisioned concurrency would remove cold starts but bills ~$3+/month per
+function even when idle, which this project avoids.
+
 **Video:** 17 films, 4 renditions each (9.2 GB), all READY; Big Buck Bunny transcode 7m42s on Fargate Spot (~$0.02).
 **Cost so far:** ~$2.80 of usage for bhavs (COSTS.md), idle ~$0.45/month.
 
